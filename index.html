@@ -55,14 +55,7 @@ img{display:block;max-width:100%}
 @media(min-width:900px){.hero{grid-template-columns:auto 1fr;height:var(--hero-h);gap:24px}}
 .phone{position:relative;height:var(--hero-h);aspect-ratio:1080/1920;margin:0 auto;border-radius:44px;padding:10px;background:#000;box-shadow:0 0 0 2px #1d2852,0 30px 80px -30px rgba(63,151,255,.65)}
 @media(max-width:899px){.phone{height:auto;width:min(340px,86vw)}}
-.screens{position:relative;width:100%;height:100%;border-radius:35px;overflow:hidden;background:#f2f4fb}
-.screens img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top;opacity:0;animation:cycle 16s infinite}
-.screens img:nth-child(2){animation-delay:4s}.screens img:nth-child(3){animation-delay:8s}.screens img:nth-child(4){animation-delay:12s}
-@keyframes cycle{0%{opacity:0}4%,25%{opacity:1}29%,100%{opacity:0}}
-.dots{position:absolute;left:50%;bottom:20px;translate:-50% 0;display:flex;gap:6px;padding:7px 10px;border-radius:999px;background:rgba(7,11,29,.7)}
-.dots i{width:7px;height:7px;border-radius:50%;background:#fff;opacity:.35;animation:dot 16s infinite}
-.dots i:nth-child(2){animation-delay:4s}.dots i:nth-child(3){animation-delay:8s}.dots i:nth-child(4){animation-delay:12s}
-@keyframes dot{0%,25%{opacity:1}29%,100%{opacity:.35}}
+.phone video{width:100%;height:100%;object-fit:cover;border-radius:35px;background:#000}
 
 .stores{display:flex;flex-direction:column;border-radius:32px;background:var(--grad);padding:clamp(20px,3vw,36px);position:relative;overflow:hidden}
 /* the gift ribbon, crossing the panel like a wrapped present */
@@ -100,7 +93,6 @@ h2{font-size:clamp(26px,3.4vw,38px);font-weight:800;letter-spacing:-.03em;margin
 footer{padding:24px 0 48px;text-align:center;color:var(--muted);font-weight:700;font-size:14px;display:flex;justify-content:center;align-items:center;gap:10px}
 footer img{width:32px;height:32px;border-radius:9px}
 footer a{color:#9cc2ff;text-decoration:none}
-@media(prefers-reduced-motion:reduce){.screens img,.dots i{animation:none!important}.screens img:first-child{opacity:1}}
 </style>
 </head>
 <body>
@@ -109,14 +101,8 @@ footer a{color:#9cc2ff;text-decoration:none}
   <header class="top"><img src="assets/favicon.svg" alt=""><b>Gift Card Vault</b></header>
 
   <div class="hero">
-    <div class="phone" aria-label="Gift Card Vault screens">
-      <div class="screens">
-        <img src="assets/hero-01-home.webp" alt="Every gift card at a glance">
-        <img src="assets/hero-02-combine.webp" alt="One total per store">
-        <img src="assets/hero-03-stores.webp" alt="Stores A to Z">
-        <img src="assets/hero-06-alerts.webp" alt="Expiry alerts">
-      </div>
-      <div class="dots" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+    <div class="phone">
+      <video id="demo" src="assets/demo.mp4" poster="assets/poster.jpg" muted loop playsinline autoplay preload="metadata" aria-label="Gift Card Vault demo"></video>
     </div>
 
     <div class="stores">
