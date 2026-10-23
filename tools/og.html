@@ -1,0 +1,48 @@
+<!doctype html>
+<!-- Source for assets/og-share.jpg (1200x630 WhatsApp / X share card).
+     The twin of Card Vault's tools/og.html. Regenerate: python tools/make-og.py -->
+<html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;box-sizing:border-box}
+body{width:1200px;height:630px;overflow:hidden;background:#070c22;font-family:"Plus Jakarta Sans",sans-serif;color:#eef3ff;position:relative}
+.glow{position:absolute;inset:0;background:radial-gradient(700px 520px at 8% 0%,rgba(63,151,255,.42),transparent 60%),radial-gradient(620px 520px at 100% 100%,rgba(58,47,201,.45),transparent 60%)}
+.ring{position:absolute;left:-160px;bottom:-260px;width:560px;height:560px;border-radius:50%;border:70px solid rgba(255,255,255,.035)}
+/* the gift ribbon, wrapped behind the phones */
+.rib-v{position:absolute;right:250px;top:0;bottom:0;width:30px;background:rgba(255,122,47,.16)}
+.rib-h{position:absolute;left:640px;right:0;top:470px;height:24px;background:rgba(255,122,47,.12)}
+.left{position:absolute;left:72px;top:0;bottom:0;width:580px;display:flex;flex-direction:column;justify-content:center}
+.brand{display:flex;align-items:center;gap:20px}
+.brand img{width:96px;height:96px;border-radius:26px;box-shadow:0 18px 40px -12px rgba(58,47,201,.95)}
+.brand b{font-size:64px;font-weight:800;letter-spacing:-.04em;line-height:1}
+.tag{margin-top:26px;font-size:34px;font-weight:700;line-height:1.2;letter-spacing:-.02em;color:#dfe8ff}
+.tag em{font-style:normal;background:linear-gradient(135deg,#8cc4ff,#a5b4fc 55%,#ffb27f);-webkit-background-clip:text;background-clip:text;color:transparent}
+.chips{display:flex;gap:12px;margin-top:34px;flex-wrap:wrap}
+.chip{padding:10px 16px;border-radius:999px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.16);font-size:20px;font-weight:700;white-space:nowrap}
+.chip b{color:#ffb27f}
+.url{position:absolute;left:72px;bottom:40px;font-size:22px;font-weight:700;color:#9fb0dc}
+.phones{position:absolute;right:40px;top:0;bottom:0;width:520px}
+.ph{position:absolute;width:232px;aspect-ratio:9/16;border-radius:34px;padding:8px;background:#000;box-shadow:0 0 0 2px #1d2852,0 40px 80px -30px rgba(0,0,0,.9)}
+.ph img{width:100%;height:100%;object-fit:cover;object-position:top;border-radius:27px}
+.p1{left:30px;top:118px;transform:rotate(-7deg)}
+.p2{left:250px;top:62px;transform:rotate(5deg);z-index:2}
+.bow{position:absolute;right:226px;top:20px;width:80px;z-index:3}
+</style></head>
+<body>
+<div class="glow"></div><div class="ring"></div><div class="rib-v"></div><div class="rib-h"></div>
+<div class="left">
+  <div class="brand"><img src="../assets/favicon.svg"><b>Gift Card Vault</b></div>
+  <p class="tag">Every gift card,<br><em>one total per store.</em></p>
+  <div class="chips">
+    <span class="chip"><b>340+</b> stores</span>
+    <span class="chip">On Google Play</span>
+    <span class="chip"><b>0</b> internet</span>
+  </div>
+</div>
+<div class="url">giftcardvault.yourcardjourney.store</div>
+<div class="phones">
+  <div class="ph p1"><img src="../assets/01-home.webp"></div>
+  <div class="ph p2"><img src="../assets/02-combine.webp"></div>
+</div>
+<svg class="bow" viewBox="0 0 110 70" aria-hidden="true"><g fill="none" stroke="#ff7a2f" stroke-width="8"><ellipse cx="34" cy="34" rx="24" ry="14" transform="rotate(-24 34 34)"/><ellipse cx="76" cy="34" rx="24" ry="14" transform="rotate(24 76 34)"/></g><circle cx="55" cy="38" r="10" fill="#ff7a2f"/></svg>
+</body></html>
