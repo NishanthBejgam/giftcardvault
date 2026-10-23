@@ -1,4 +1,4 @@
-# Renders tools/og.html to assets/og-share.jpg (1200x630), the share image
+# Renders tools/og.html to assets/og-gift.jpg (1200x630), the share image
 # WhatsApp and X show for the page link.
 import os
 from io import BytesIO
@@ -7,7 +7,7 @@ from playwright.sync_api import sync_playwright
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SRC = os.path.join(ROOT, "tools", "og.html")
-OUT = os.path.join(ROOT, "assets", "og-share.jpg")
+OUT = os.path.join(ROOT, "assets", "og-gift.jpg")
 
 with sync_playwright() as p:
     b = p.chromium.launch()
