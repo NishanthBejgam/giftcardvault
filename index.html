@@ -49,7 +49,20 @@ img{display:block;max-width:100%}
 /* header */
 .top{display:flex;align-items:center;gap:10px;height:72px}
 .top img{width:34px;height:34px;border-radius:10px}
-.top b{font-weight:800;font-size:18px;letter-spacing:-.01em}
+.top b{font-weight:800;font-size:18px;letter-spacing:-.01em;white-space:nowrap}
+
+/* instant alerts: the WhatsApp channel, the same bell as the other boards -
+   filled in this app's colours, halo pulse, a swing every few seconds, red badge */
+.alert{margin-left:auto;position:relative;isolation:isolate;display:inline-flex;align-items:center;gap:8px;height:40px;padding:0 16px 0 13px;border-radius:12px;background:var(--grad);color:#fff;text-decoration:none;font-weight:800;font-size:14px;white-space:nowrap;box-shadow:0 6px 18px -4px rgba(63,151,255,.6),inset 0 1px 0 rgba(255,255,255,.3);transition:transform .25s cubic-bezier(.34,1.56,.64,1)}
+.alert:hover{transform:translateY(-1px) scale(1.04)}
+.alert::after{content:"";position:absolute;inset:0;border-radius:inherit;z-index:-1;animation:alertHalo 2.4s ease-out infinite}
+.alert svg{width:18px;height:18px;overflow:visible;transform-origin:12px 3px;animation:alertSwing 4.8s ease-in-out infinite}
+.alert i{position:absolute;top:-4px;right:-4px;width:12px;height:12px;border-radius:50%;background:#ff3b30;box-shadow:0 0 0 2px var(--bg);animation:alertBadge 2.4s ease-in-out infinite}
+@keyframes alertHalo{0%{box-shadow:0 0 0 0 rgba(63,151,255,.55)}70%,100%{box-shadow:0 0 0 10px rgba(63,151,255,0)}}
+@keyframes alertSwing{0%,72%,100%{transform:rotate(0)}76%{transform:rotate(18deg)}80%{transform:rotate(-15deg)}84%{transform:rotate(10deg)}88%{transform:rotate(-6deg)}92%{transform:rotate(2deg)}}
+@keyframes alertBadge{0%,100%{transform:scale(1)}50%{transform:scale(1.18)}}
+@media(max-width:400px){.alert{gap:6px;padding:0 12px 0 10px;font-size:13px}}
+@media(prefers-reduced-motion:reduce){.alert::after,.alert svg,.alert i{animation:none}}
 
 /* hero: the phone and the store panel, same height */
 .hero{display:grid;gap:20px;padding:8px 0 64px}
@@ -108,7 +121,13 @@ footer a{color:#9cc2ff;text-decoration:none}
 <body>
 <div class="wrap">
 
-  <header class="top"><img src="assets/favicon.svg" alt=""><b>Gift Card Vault</b></header>
+  <header class="top"><img src="assets/favicon.svg" alt=""><b>Gift Card Vault</b>
+    <!-- Instant alerts: the WhatsApp channel every broadcast goes to. -->
+    <a class="alert" href="https://www.whatsapp.com/channel/0029Vb6gU8QIt5rqf5Yxao0n" target="_blank" rel="noopener" title="Instant alerts on WhatsApp" aria-label="Get instant alerts on our WhatsApp channel">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+      Instant alerts<i aria-hidden="true"></i>
+    </a>
+  </header>
 
   <div class="hero">
     <div class="phone">
