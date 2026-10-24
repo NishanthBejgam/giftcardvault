@@ -113,6 +113,39 @@ h2{font-size:clamp(26px,3.4vw,38px);font-weight:800;letter-spacing:-.03em;margin
 .fact b{display:block;font-size:clamp(28px,3.4vw,40px);font-weight:800;letter-spacing:-.03em;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
 .fact span{color:var(--muted);font-weight:700;font-size:14.5px}
 
+/* comparison: score headers + one category at a time */
+.vs{border-radius:28px;background:var(--panel);border:1px solid var(--line);padding:clamp(14px,2.4vw,28px);--cols:minmax(0,1fr) repeat(3,clamp(70px,15vw,170px))}
+.vs-tabs{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;margin:0 calc(-1*clamp(14px,2.4vw,28px)) 20px;padding:0 clamp(14px,2.4vw,28px)}
+.vs-tabs::-webkit-scrollbar{display:none}
+.vs-tabs button{flex:none;border:1px solid var(--line);background:transparent;color:var(--muted);font:700 14px/1 inherit;padding:11px 16px;border-radius:999px;cursor:pointer;transition:background .2s,color .2s,border-color .2s}
+.vs-tabs button:hover{color:var(--text)}
+.vs-tabs button[aria-selected=true]{background:var(--text);border-color:var(--text);color:#0d1430}
+.vs-head,.vs-row{display:grid;grid-template-columns:var(--cols);align-items:stretch}
+.vs-head>div{display:flex;flex-direction:column;justify-content:flex-end;gap:6px;padding:16px 10px 14px;text-align:center}
+.vs-head .who{font-weight:800;font-size:clamp(12px,1.4vw,15px);line-height:1.2}
+.vs-head .sc{font-weight:800;font-size:clamp(28px,4vw,48px);line-height:.9;letter-spacing:-.04em}
+.vs-head .sc small{font-size:.36em;color:var(--muted);letter-spacing:0;margin-left:2px}
+.vs-head .bar{height:4px;border-radius:4px;background:rgba(255,255,255,.1);overflow:hidden}
+.vs-head .bar i{display:block;height:100%;width:0;border-radius:inherit;background:#7f8fc0;transition:width 1.1s cubic-bezier(.2,.8,.2,1)}
+.vs.seen .vs-head .bar i{width:var(--w)}
+.vs-head .cv{background:var(--grad);border-radius:20px 20px 0 0}
+.vs-head .cv .sc small{color:#dbe8ff}
+.vs-head .cv .bar{background:rgba(255,255,255,.22)}
+.vs-head .cv .bar i{background:#fff}
+.vs-row>div{display:flex;align-items:center;justify-content:center;gap:6px;padding:13px 8px;border-top:1px solid var(--line);text-align:center;font-size:12.5px;line-height:1.3;color:var(--muted);font-weight:600}
+.vs-row>div:first-child{justify-content:flex-start;text-align:left;font-size:clamp(13.5px,1.5vw,16px);color:var(--text);font-weight:700;padding-left:4px}
+.vs-row .cv{background:rgba(63,151,255,.14);border-top-color:rgba(156,194,255,.18)}
+.vs-row:last-child .cv{border-radius:0 0 20px 20px}
+.vs-row{animation:rowin .45s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(var(--i)*35ms)}
+@keyframes rowin{from{opacity:0;transform:translateY(8px)}}
+.ok,.no{flex:none;width:22px;height:22px;border-radius:50%;display:grid;place-items:center}
+.ok{background:rgba(52,211,153,.16);color:#34d399}
+.no{background:rgba(248,113,113,.12);color:#f87171}
+.ok svg,.no svg{width:13px;height:13px}
+.vs-row .t-ok{color:#6ee7b7}.vs-row .t-no{color:#fca5a5}
+@media(max-width:620px){.vs-row>div{flex-direction:column;gap:4px;font-size:11px;padding:11px 4px}.vs-row>div:first-child{flex-direction:row}}
+
+
 footer{padding:24px 0 48px;text-align:center;color:var(--muted);font-weight:700;font-size:14px;display:flex;justify-content:center;align-items:center;gap:10px}
 footer img{width:32px;height:32px;border-radius:9px}
 footer a{color:#9cc2ff;text-decoration:none}
@@ -174,6 +207,15 @@ footer a{color:#9cc2ff;text-decoration:none}
   </section>
 
   <section>
+    <h2>How it compares</h2>
+    <div class="vs" id="vs">
+      <div class="vs-tabs" role="tablist" id="vs-tabs"></div>
+      <div class="vs-head" id="vs-head"></div>
+      <div id="vs-body"></div>
+    </div>
+  </section>
+
+  <section>
     <h2>Gift Card Vault in numbers</h2>
     <div class="facts">
       <div class="fact"><b>340+</b><span>stores, or add your own</span></div>
@@ -186,5 +228,107 @@ footer a{color:#9cc2ff;text-decoration:none}
 </div>
 
 <footer><img src="assets/ycj.png" alt="">Shared by <a href="https://x.com/YourCardJourney" target="_blank" rel="noopener">@YourCardJourney</a></footer>
+<script>
+// Comparison. Cell: 1 = yes, 0 = no, "text" = partly, "1:text" / "0:text" = yes / no with a note
+const VS = {
+  'What it is': [
+    ['Built only for gift cards & vouchers', 1, 0, '0:Not made for vouchers'],
+    ['One place for every voucher you own', 1, 'Messy list', 'Mixed with passwords'],
+    ['Handles 100s of vouchers comfortably', 1, 'Hard to scroll', 1],
+    ['Works fully offline', 1, 1, 'Needs internet to sync'],
+    ['No account / sign-up needed', 1, 1, 0],
+    ['Data stays only on your phone', 1, 'Often syncs to cloud', '0:Stored on their servers'],
+  ],
+  'Organising': [
+    ['Store colours for 340+ Indian stores', 1, 0, 0],
+    ['Misspelt store names auto-corrected', 1, 0, 0],
+    ['Add your own store', 1, 'Type it yourself', 'Type it yourself'],
+    ['Store picker, A to Z with search', 1, 0, 0],
+    ['Filter by store / status', 1, 0, 'Basic folders'],
+    ['Search across all vouchers', 1, 1, 1],
+    ['Archive used vouchers (not delete)', 1, 0, 0],
+    ['Duplicate code refused', 1, 0, 0],
+    ['Quickly tell vouchers apart', '1:Store-colour tiles', '0:Plain text', '0:Plain list'],
+  ],
+  'Money & expiry': [
+    ['Total value of every voucher', 1, 0, 0],
+    ['Combined value per store', 1, 0, 0],
+    ['Balance left after part use', 1, 'Type it yourself', 0],
+    ['Spend keypad, no overspending', 1, 0, 0],
+    ['Expiry date tracked per voucher', 1, 'Type it yourself', 'Custom field'],
+    ['Expiring-soon alerts', '1:In-app bell', 0, 0],
+    ['Expired / redeemed counted apart', 1, 0, 0],
+  ],
+  'Speed': [
+    ['Checkout view: big code + PIN', 1, 'Scroll + select text', 'Several taps'],
+    ['One-tap copy of code / PIN', 1, 0, 1],
+    ['Scan a voucher with the camera', '1:Offline scan', 0, 0],
+    ['Read a voucher from a screenshot', '1:Offline', 0, 0],
+    ['Paste a voucher email, get cards', '1:Many at once', 0, 0],
+    ['Share an email or screenshot in', 1, 'Saved as text', 0],
+    ['Share one voucher with its PIN', 1, 'Copy text', 'Some apps'],
+    ['Browser autofill at checkout', 0, 0, '1:Main strength'],
+  ],
+  'Security': [
+    ['Encrypted storage', '1:AES', '0:Usually plain text', '1:AES'],
+    ['Master password to open', 1, 'Optional lock', 1],
+    ['Fingerprint / Face ID unlock', 1, 'Some apps', 1],
+    ['Auto-lock when idle', 1, 0, 1],
+    ['Codes masked by default', '1:Last 4 only', 0, 1],
+    ['Clipboard auto-clears after copy', '1:45 sec', 0, 1],
+    ['Screenshots / screen recording blocked', '1:Android', 0, 'Some apps'],
+    ['Hidden in recent-apps preview', 1, 0, 1],
+    ['No server for hackers to target', 1, 'Depends on sync', '0:Server-based'],
+    ['No internet permission at all', 1, 0, 0],
+  ],
+  'Backup': [
+    ['Encrypted export file you control', 1, 0, 1],
+    ['Automatic local backup copies', '1:Daily, last 4', 0, 'Cloud copy'],
+    ['Moves to a new phone', 'Via export file', 'Via cloud', 'Auto sync'],
+    ['Same data on many devices', '1:Via export & import', 'Via cloud', 1],
+    ['Android + iPhone', 1, 1, 1],
+  ],
+  'Other': [
+    ['Stores website passwords / logins', 0, 'Plain text', '1:Main job'],
+    ['Made for Indian stores & vouchers', 1, 0, 0],
+    ['Simple enough for anyone in family', 1, 1, 'Learning curve'],
+  ],
+};
+(() => {
+  const vs = document.getElementById('vs'), tabs = document.getElementById('vs-tabs'),
+        head = document.getElementById('vs-head'), body = document.getElementById('vs-body');
+  const who = ['Gift Card Vault', 'Notes app', 'Password apps'];
+  const rows = Object.values(VS).flat();
+  const yes = c => c === 1 || (typeof c === 'string' && c.startsWith('1:'));
+  const icon = {ok: '<path d="M5 12.5l4.5 4.5L19 7.5"/>', no: '<path d="M7 7l10 10M17 7L7 17"/>'};
+  const mark = k => `<span class="${k}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round">${icon[k]}</svg></span>`;
+  const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;');
+  const cell = c => {
+    if (c === 1) return mark('ok');
+    if (c === 0) return mark('no');
+    const m = /^([01]):(.*)$/.exec(c);
+    if (!m) return esc(c);
+    const k = m[1] === '1' ? 'ok' : 'no';
+    return mark(k) + `<span class="t-${k}">${esc(m[2])}</span>`;
+  };
+
+  head.innerHTML = '<div></div>' + who.map((w, i) => {
+    const n = rows.filter(r => yes(r[i + 1])).length;
+    return `<div class="${i ? '' : 'cv'}"><span class="who">${w}</span><span class="sc">${n}<small>/${rows.length}</small></span><span class="bar"><i style="--w:${n / rows.length * 100}%"></i></span></div>`;
+  }).join('');
+
+  const show = name => {
+    [...tabs.children].forEach(t => t.setAttribute('aria-selected', t.textContent === name));
+    body.innerHTML = VS[name].map((r, i) =>
+      `<div class="vs-row" style="--i:${i}"><div>${esc(r[0])}</div>` +
+      r.slice(1).map((c, j) => `<div class="${j ? '' : 'cv'}">${cell(c)}</div>`).join('') + '</div>').join('');
+  };
+  tabs.innerHTML = Object.keys(VS).map(k => `<button type="button" role="tab">${k}</button>`).join('');
+  tabs.addEventListener('click', e => { if (e.target.matches('button')) show(e.target.textContent); });
+  show('What it is');
+
+  new IntersectionObserver((es, o) => { if (es[0].isIntersecting) { vs.classList.add('seen'); o.disconnect(); } }, {threshold: .3}).observe(vs);
+})();
+</script>
 </body>
 </html>
