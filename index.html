@@ -146,6 +146,27 @@ h2{font-size:clamp(26px,3.4vw,38px);font-weight:800;letter-spacing:-.03em;margin
 @media(max-width:620px){.vs-row>div{flex-direction:column;gap:4px;font-size:11px;padding:11px 4px}.vs-row>div:first-child{flex-direction:row}}
 
 
+/* review */
+.rv-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media(max-width:620px){.rv-grid{grid-template-columns:1fr}}
+.rv{position:relative;overflow:hidden;display:flex;flex-direction:column;align-items:flex-start;gap:18px;padding:clamp(20px,3vw,30px);border-radius:24px;background:var(--panel);border:1px solid var(--line);color:var(--text);text-decoration:none;transition:transform .25s cubic-bezier(.34,1.56,.64,1),border-color .2s}
+.rv::after{content:"";position:absolute;right:-70px;top:-70px;width:200px;height:200px;border-radius:50%;border:34px solid rgba(63,151,255,.12);transition:transform .4s}
+a.rv:hover{transform:translateY(-3px);border-color:#3d63e4}
+a.rv:hover::after{transform:scale(1.15)}
+.rv-store{display:flex;align-items:center;gap:12px;font-weight:800;font-size:17px}
+.rv-store i{width:44px;height:44px;border-radius:13px;background:#fff;display:grid;place-items:center}
+.rv-store svg{width:24px;height:24px}
+.rv-store small{display:block;color:var(--muted);font-size:13px;font-weight:600}
+.rv-stars{display:flex;gap:6px}
+.rv-stars svg{width:clamp(26px,3.4vw,34px);height:clamp(26px,3.4vw,34px);transition:transform .3s cubic-bezier(.34,1.56,.64,1)}
+a.rv:hover .rv-stars svg{transform:translateY(-4px) scale(1.12)}
+.rv-stars svg:nth-child(2){transition-delay:.05s}.rv-stars svg:nth-child(3){transition-delay:.1s}.rv-stars svg:nth-child(4){transition-delay:.15s}.rv-stars svg:nth-child(5){transition-delay:.2s}
+.rv-go{display:inline-flex;align-items:center;gap:8px;background:var(--grad);color:#fff;font-weight:800;font-size:14px;padding:11px 18px;border-radius:12px;box-shadow:0 6px 18px -6px rgba(63,151,255,.7)}
+.rv-go svg{width:16px;height:16px;transition:transform .2s}
+a.rv:hover .rv-go svg{transform:translateX(3px)}
+.rv.soon-rv .rv-stars{opacity:.35}
+.rv.soon-rv .rv-go{background:transparent;color:var(--muted);box-shadow:none;border:1px solid var(--line)}
+
 footer{padding:24px 0 48px;text-align:center;color:var(--muted);font-weight:700;font-size:14px;display:flex;justify-content:center;align-items:center;gap:10px}
 footer img{width:32px;height:32px;border-radius:9px}
 footer a{color:#9cc2ff;text-decoration:none}
@@ -212,6 +233,23 @@ footer a{color:#9cc2ff;text-decoration:none}
       <div class="vs-tabs" role="tablist" id="vs-tabs"></div>
       <div class="vs-head" id="vs-head"></div>
       <div id="vs-body"></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Liked Gift Card Vault? Leave a review</h2>
+    <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><linearGradient id="rvg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#9cc2ff"/><stop offset=".55" stop-color="#3f97ff"/><stop offset="1" stop-color="#3d63e4"/></linearGradient></defs></svg>
+    <div class="rv-grid">
+      <a class="rv" href="https://play.google.com/store/apps/details?id=com.yourcardjourney.giftcardvault&amp;showAllReviews=true" target="_blank" rel="noopener">
+        <span class="rv-store"><i><svg viewBox="0 0 24 24"><path fill="#34a853" d="M3.6 2.2 13.8 12 3.6 21.8c-.4-.2-.6-.6-.6-1.1V3.3c0-.5.2-.9.6-1.1Z"/><path fill="#fbbc04" d="m17.5 8.3 3.2 1.8c.9.5.9 1.8 0 2.3l-3.2 1.8-3.7-2.2Z"/><path fill="#4285f4" d="M13.8 12 3.6 2.2 17.5 8.3Z"/><path fill="#ea4335" d="M13.8 12 17.5 15.7 3.6 21.8Z"/></svg></i><span>Google Play<small>Android</small></span></span>
+        <span class="rv-stars"><svg viewBox="0 0 24 24"><path fill="url(#rvg)" d="m12 2.8 2.8 5.7 6.3.9-4.6 4.4 1.1 6.2L12 17.1 6.4 20l1.1-6.2L2.9 9.4l6.3-.9Z"/></svg><svg viewBox="0 0 24 24"><path fill="url(#rvg)" d="m12 2.8 2.8 5.7 6.3.9-4.6 4.4 1.1 6.2L12 17.1 6.4 20l1.1-6.2L2.9 9.4l6.3-.9Z"/></svg><svg viewBox="0 0 24 24"><path fill="url(#rvg)" d="m12 2.8 2.8 5.7 6.3.9-4.6 4.4 1.1 6.2L12 17.1 6.4 20l1.1-6.2L2.9 9.4l6.3-.9Z"/></svg><svg viewBox="0 0 24 24"><path fill="url(#rvg)" d="m12 2.8 2.8 5.7 6.3.9-4.6 4.4 1.1 6.2L12 17.1 6.4 20l1.1-6.2L2.9 9.4l6.3-.9Z"/></svg><svg viewBox="0 0 24 24"><path fill="url(#rvg)" d="m12 2.8 2.8 5.7 6.3.9-4.6 4.4 1.1 6.2L12 17.1 6.4 20l1.1-6.2L2.9 9.4l6.3-.9Z"/></svg></span>
+        <span class="rv-go">Rate on Google Play<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+      </a>
+      <div class="rv soon-rv">
+        <span class="rv-store"><i><svg viewBox="0 0 24 24" fill="#10163a"><path d="M16.4 12.6c0-2.6 2.1-3.8 2.2-3.9-1.2-1.8-3.1-2-3.7-2-1.6-.2-3.1.9-3.9.9-.8 0-2-.9-3.4-.9-1.7 0-3.3 1-4.2 2.6-1.8 3.1-.5 7.7 1.3 10.2.9 1.2 1.9 2.6 3.2 2.6 1.3-.1 1.8-.8 3.3-.8s2 .8 3.4.8 2.2-1.3 3.1-2.5c1-1.4 1.4-2.8 1.4-2.9-.1 0-2.7-1-2.7-4.1ZM13.9 5c.7-.9 1.2-2 1-3.2-1 0-2.3.7-3 1.6-.7.8-1.3 2-1.1 3.1 1.2.1 2.4-.6 3.1-1.5Z"/></svg></i><span>App Store<small>iPhone</small></span></span>
+        <span class="rv-stars"><svg viewBox="0 0 24 24"><path fill="url(#rvg)" d="m12 2.8 2.8 5.7 6.3.9-4.6 4.4 1.1 6.2L12 17.1 6.4 20l1.1-6.2L2.9 9.4l6.3-.9Z"/></svg><svg viewBox="0 0 24 24"><path fill="url(#rvg)" d="m12 2.8 2.8 5.7 6.3.9-4.6 4.4 1.1 6.2L12 17.1 6.4 20l1.1-6.2L2.9 9.4l6.3-.9Z"/></svg><svg viewBox="0 0 24 24"><path fill="url(#rvg)" d="m12 2.8 2.8 5.7 6.3.9-4.6 4.4 1.1 6.2L12 17.1 6.4 20l1.1-6.2L2.9 9.4l6.3-.9Z"/></svg><svg viewBox="0 0 24 24"><path fill="url(#rvg)" d="m12 2.8 2.8 5.7 6.3.9-4.6 4.4 1.1 6.2L12 17.1 6.4 20l1.1-6.2L2.9 9.4l6.3-.9Z"/></svg><svg viewBox="0 0 24 24"><path fill="url(#rvg)" d="m12 2.8 2.8 5.7 6.3.9-4.6 4.4 1.1 6.2L12 17.1 6.4 20l1.1-6.2L2.9 9.4l6.3-.9Z"/></svg></span>
+        <span class="rv-go">Coming soon</span>
+      </div>
     </div>
   </section>
 
