@@ -200,8 +200,9 @@ a.rv:hover .rv-go svg{transform:translateX(3px)}
 .tt b{display:block;font-size:clamp(24px,2.8vw,34px);font-weight:800;letter-spacing:-.03em;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;line-height:1.1}
 .tt span{display:block;margin-top:6px;color:var(--muted);font-weight:700;font-size:14.5px}
 .try-acts{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px}
-.try-reset,.try-full{display:inline-flex;align-items:center;height:44px;padding:0 18px;border-radius:12px;font:800 14px/1 inherit;text-decoration:none;cursor:pointer}
-.try-reset{background:var(--grad);color:#fff;border:0;box-shadow:0 6px 18px -6px rgba(63,151,255,.7)}
+.try-full{display:inline-flex;align-items:center;height:44px;padding:0 18px;border-radius:12px;font:800 14px/1 inherit;text-decoration:none;cursor:pointer}
+button.try-link{border:0;cursor:pointer;font-family:inherit}
+.try-reset i{box-shadow:0 0 0 3px var(--bg)}
 .try-full{background:transparent;color:var(--text);border:1px solid var(--line)}
 @media(min-width:900px){.try-full{display:none}}
 
@@ -295,7 +296,7 @@ footer a{color:#9cc2ff;text-decoration:none}
           <div class="tt"><b>Fresh</b><span>every time you open it</span></div>
         </div>
         <div class="try-acts">
-          <button type="button" class="try-reset" id="try-reset">Start over</button>
+          <button type="button" class="try-link try-reset" id="try-reset"><svg class="bolt" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M13.5 2 4 13.5h6.5L9.5 22 20 9.5h-6.6L13.5 2Z"/></svg>Start over<i aria-hidden="true"></i></button>
           <a class="try-full" href="demo/" target="_blank" rel="noopener">Open full screen</a>
         </div>
       </div>
