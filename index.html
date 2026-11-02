@@ -75,7 +75,7 @@ img{display:block;max-width:100%}
 /* the gift ribbon, crossing the panel like a wrapped present */
 .stores::before{content:"";position:absolute;right:22%;top:-10%;bottom:-10%;width:clamp(22px,2.4vw,30px);background:rgba(255,255,255,.12)}
 .stores::after{content:"";position:absolute;left:-10%;right:-10%;top:58%;height:clamp(16px,1.8vw,22px);background:rgba(255,255,255,.09)}
-.bow{position:absolute;right:calc(22% - 38px);top:clamp(18px,4vw,42px);width:clamp(84px,9vw,110px);z-index:1}
+.bow{position:absolute;right:calc(22% - 38px);top:clamp(10px,1.4vw,16px);width:clamp(84px,9vw,110px);z-index:1}
 .big{position:relative;z-index:1}
 .big .n{font-size:clamp(64px,9vw,112px);font-weight:800;font-variant-numeric:tabular-nums;line-height:.9;letter-spacing:-.05em}
 .big .l{font-size:clamp(16px,1.7vw,20px);font-weight:700;color:#e3ecff;margin-top:8px;max-width:22ch}
@@ -168,9 +168,18 @@ a.rv:hover .rv-go svg{transform:translateX(3px)}
 .rv.soon-rv .rv-go{background:transparent;color:var(--muted);box-shadow:none;border:1px solid var(--line)}
 
 /* hero: a way down to the live demo */
-.try-link{display:inline-flex;align-items:center;gap:8px;margin-top:16px;padding:10px 16px;border-radius:12px;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.35);color:#fff;text-decoration:none;font-weight:800;font-size:15px;transition:background .2s,transform .25s cubic-bezier(.34,1.56,.64,1)}
-.try-link:hover{background:rgba(255,255,255,.26);transform:translateY(-2px)}
-.try-link svg{width:16px;height:16px}
+@media(min-width:900px) and (max-width:1120px){.bow{display:none}}
+.big-row{display:flex;align-items:flex-end;flex-wrap:wrap;gap:14px 28px}
+/* the live-demo button: the ribbon orange (not the panel's blue), a bolt that
+   flashes, a halo pulse and a red dot - so it is the first thing seen */
+.try-link{position:relative;isolation:isolate;display:inline-flex;align-items:center;gap:9px;height:50px;padding:0 22px 0 18px;border-radius:14px;background:linear-gradient(135deg,#ff9a3c,#ff7a2f 45%,#ff4f6d);color:#fff;text-decoration:none;font-weight:800;font-size:17px;white-space:nowrap;box-shadow:0 10px 26px -8px rgba(255,90,60,.85),inset 0 1px 0 rgba(255,255,255,.35);transition:transform .25s cubic-bezier(.34,1.56,.64,1)}
+.try-link:hover{transform:translateY(-2px) scale(1.04)}
+.try-link::after{content:"";position:absolute;inset:0;border-radius:inherit;z-index:-1;animation:tryHalo 2s ease-out infinite}
+.try-link .bolt{width:20px;height:20px;color:#fff6c8;animation:bolt 1.6s steps(1) infinite}
+.try-link i{position:absolute;top:-5px;right:-5px;width:14px;height:14px;border-radius:50%;background:#ff2d2d;box-shadow:0 0 0 3px #1f63e6;animation:alertBadge 1.6s ease-in-out infinite}
+@keyframes tryHalo{0%{box-shadow:0 0 0 0 rgba(255,122,47,.7)}70%,100%{box-shadow:0 0 0 14px rgba(255,122,47,0)}}
+@keyframes bolt{0%,40%,60%,100%{opacity:1;filter:drop-shadow(0 0 6px #fff3a0)}45%,55%{opacity:.25;filter:none}}
+@media(prefers-reduced-motion:reduce){.try-link::after,.try-link .bolt,.try-link i{animation:none}}
 
 /* the live demo: the real app in a phone, scaled to fit (it lays out for a 393 px phone) */
 .try{display:grid;gap:28px;align-items:center}
@@ -186,19 +195,15 @@ a.rv:hover .rv-go svg{transform:translateX(3px)}
 .try-start:hover .try-play{transform:scale(1.05)}
 @keyframes tryPulse{0%{box-shadow:0 0 0 0 rgba(63,151,255,.55),0 12px 30px -8px rgba(63,151,255,.8)}70%,100%{box-shadow:0 0 0 18px rgba(63,151,255,0),0 12px 30px -8px rgba(63,151,255,.8)}}
 @media(prefers-reduced-motion:reduce){.try-play{animation:none}}
-.try-lead{font-size:clamp(16px,1.6vw,19px);color:#d8e2ff;max-width:52ch}
-.try-lead b{color:#fff}
-.try-list{list-style:none;padding:0;margin:22px 0 0;display:grid;gap:10px;counter-reset:t}
-@media(min-width:620px){.try-list{grid-template-columns:1fr 1fr}}
-.try-list li{counter-increment:t;display:flex;gap:12px;align-items:flex-start;padding:12px 14px;border-radius:16px;background:var(--panel);border:1px solid var(--line);font-size:14.5px;line-height:1.4;color:var(--muted)}
-.try-list li b{color:var(--text)}
-.try-list li::before{content:counter(t);flex:none;width:24px;height:24px;border-radius:8px;display:grid;place-items:center;background:rgba(255,122,47,.16);color:var(--ribbon);font-weight:800;font-size:13px}
+.try-tiles{display:grid;grid-template-columns:1fr 1fr;gap:14px;max-width:560px}
+.tt{padding:20px;border-radius:20px;background:var(--panel);border:1px solid var(--line)}
+.tt b{display:block;font-size:clamp(24px,2.8vw,34px);font-weight:800;letter-spacing:-.03em;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;line-height:1.1}
+.tt span{display:block;margin-top:6px;color:var(--muted);font-weight:700;font-size:14.5px}
 .try-acts{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px}
 .try-reset,.try-full{display:inline-flex;align-items:center;height:44px;padding:0 18px;border-radius:12px;font:800 14px/1 inherit;text-decoration:none;cursor:pointer}
 .try-reset{background:var(--grad);color:#fff;border:0;box-shadow:0 6px 18px -6px rgba(63,151,255,.7)}
 .try-full{background:transparent;color:var(--text);border:1px solid var(--line)}
 @media(min-width:900px){.try-full{display:none}}
-.try-note{margin-top:14px;font-size:13px;color:var(--muted)}
 
 footer{padding:24px 0 48px;text-align:center;color:var(--muted);font-weight:700;font-size:14px;display:flex;justify-content:center;align-items:center;gap:10px}
 footer img{width:32px;height:32px;border-radius:9px}
@@ -223,8 +228,9 @@ footer a{color:#9cc2ff;text-decoration:none}
 
     <div class="stores">
       <svg class="bow" viewBox="0 0 110 70" aria-hidden="true"><g fill="none" stroke="#ff7a2f" stroke-width="8"><ellipse cx="34" cy="34" rx="24" ry="14" transform="rotate(-24 34 34)"/><ellipse cx="76" cy="34" rx="24" ry="14" transform="rotate(24 76 34)"/></g><circle cx="55" cy="38" r="10" fill="#ff7a2f"/></svg>
-      <div class="big"><div class="n" id="users" data-to="250">250+</div><div class="l">GiftCard users on Android</div>
-        <a class="try-link" href="#try">Try the live demo<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M6 13l6 6 6-6"/></svg></a></div>
+      <div class="big"><div class="big-row"><div class="n" id="users" data-to="250">250+</div>
+        <a class="try-link" href="#try"><svg class="bolt" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M13.5 2 4 13.5h6.5L9.5 22 20 9.5h-6.6L13.5 2Z"/></svg>Try the live demo<i aria-hidden="true"></i></a></div>
+        <div class="l">GiftCard users on Android</div></div>
       <div class="soon">
         <a class="qr" href="https://play.google.com/store/apps/details?id=com.yourcardjourney.giftcardvault" target="_blank" rel="noopener">
           <img src="assets/qr-android.svg" alt="QR code for Google Play">
@@ -282,22 +288,16 @@ footer a{color:#9cc2ff;text-decoration:none}
         </div>
       </div>
       <div class="try-side">
-        <p class="try-lead">The real app, with <b>165 sample gift cards</b> in 42 stores. Tap, scroll, search, scan, add &ndash; it&rsquo;s your own copy. Nothing you do reaches anyone else, and it starts fresh every time. Deleting is switched off.</p>
-        <ol class="try-list">
-          <li><span><b>Combine by brand</b> for one total per store</span></li>
-          <li><span>Tap the <b>eye</b> to hide the value, the <b>arrow</b> to fold it</span></li>
-          <li><span>Open <b>Stores</b> and pick Amazon</span></li>
-          <li><span>Tap a card for the <b>barcode</b>, then &lsaquo; &rsaquo; to the next</span></li>
-          <li><span><b>+ &rsaquo; Paste</b> a voucher email, then Find the vouchers</span></li>
-          <li><span><b>+ &rsaquo; Scan card</b> and hold a gift card to your camera</span></li>
-          <li><span>The <b>bell</b> lists cards about to expire</span></li>
-          <li><span><b>Settings</b>: text size, Checkout mode, dark theme</span></li>
-        </ol>
+        <div class="try-tiles">
+          <div class="tt"><b>165</b><span>sample gift cards</span></div>
+          <div class="tt"><b>42</b><span>stores</span></div>
+          <div class="tt"><b>Your copy</b><span>no one else sees it</span></div>
+          <div class="tt"><b>Fresh</b><span>every time you open it</span></div>
+        </div>
         <div class="try-acts">
           <button type="button" class="try-reset" id="try-reset">Start over</button>
           <a class="try-full" href="demo/" target="_blank" rel="noopener">Open full screen</a>
         </div>
-        <p class="try-note">Sample data with made-up codes. PDF reading, screen brightness and fingerprint need the phone.</p>
       </div>
     </div>
   </section>
