@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="robots" content="noindex" />
+<meta name="demo-app" content="app.js?v=d14b0f16" />
+<meta charset="UTF-8" />
+<!-- 1.3.10 security: only this app's own files may run. Injected script (from
+     a crafted shared email, screenshot text or import file) cannot execute or
+     send anything out. 'unsafe-inline' covers style attributes only; there are
+     no inline scripts or on* handlers anywhere in the page. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' data: blob:; media-src 'self' blob: mediastream:; worker-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<!-- viewport-fit=cover lets the header run under the notch and the list run to
+     the bottom edge; mobile.css puts the padding back with safe-area insets.
+     maximum-scale stops a double-tap on a voucher code zooming the whole app. -->
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#2f8bf6" />
+<meta name="color-scheme" content="light dark" />
+<!-- Filled in by tools/sync.js from package.json (version + build). -->
+<meta name="app-version" content="1.3.11 (10316)" />
+<title>Gift Card Vault</title>
+<link rel="icon" href="favicon.svg" />
+<link rel="stylesheet" href="style.css?v=d64ec6ac" />
+<link rel="stylesheet" href="mobile.css?v=25a495a9" />
+<link rel="stylesheet" href="demo.css" />
+</head>
+<body data-theme="light">
+
+<!-- The desktop builds open an ACTIVATION screen here for the offline
+     machine-locked licence. The store builds have no licence gate at all:
+     Google Play and the App Store require their own billing for paid
+     features, and iOS has no stable hardware identifier to bind a code to.
+     See HANDOVER-ANDROID.md section 2. -->
+
+<!-- Welcome / unlock: "Gift box" (chosen 03-Oct-2026 from the welcome-screen
+     options page). The Ocean splash continues straight into this screen - the
+     whole page is the wrapped gift, ribbons crossing behind the mark - and the
+     password sits in a white sheet rising from the bottom, the same sheet the
+     app uses everywhere. Behaviour is unchanged: same fields, same ids. -->
+<div id="lock" class="lock-screen gift-lock hidden">
+  <svg class="lk-art" viewBox="0 0 390 844" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+    <rect x="262" y="-10" width="34" height="870" fill="#ffffff" fill-opacity=".10"/>
+    <rect x="-10" y="470" width="420" height="26" fill="#ffffff" fill-opacity=".08"/>
+    <g fill="#ffffff" fill-opacity=".12"><circle cx="54" cy="120" r="4"/><circle cx="340" cy="96" r="4"/><circle cx="90" cy="290" r="3"/><circle cx="356" cy="270" r="3"/><circle cx="40" cy="410" r="3"/></g>
+  </svg>
+  <div class="lk-hero">
+    <div class="lk-mark" aria-hidden="true"><svg viewBox="0 0 72 72" width="120" height="120"><g transform="translate(0 3.5)"><rect x="13" y="21" width="46" height="31" rx="7" fill="#ffffff"/><rect x="13" y="27" width="46" height="4.6" fill="#ff7a2f"/><rect x="21.5" y="21" width="4.6" height="31" fill="#ff7a2f"/><ellipse cx="19.2" cy="17.4" rx="5.2" ry="3.3" transform="rotate(-28 19.2 17.4)" fill="none" stroke="#ff7a2f" stroke-width="2.7"/><ellipse cx="28.4" cy="17.4" rx="5.2" ry="3.3" transform="rotate(28 28.4 17.4)" fill="none" stroke="#ff7a2f" stroke-width="2.7"/><circle cx="23.8" cy="21" r="3" fill="#ff7a2f"/><circle cx="39.5" cy="40" r="4.6" fill="#3a2fc9"/><path d="M37.09 42.53h4.83l1.61 6.21h-8.05z" fill="#3a2fc9"/><rect x="46" y="43.5" width="8" height="2.8" rx="1.4" fill="#3a2fc9" opacity=".55"/></g></svg></div>
+    <h1 class="lk-name">Gift Card Vault</h1>
+    <p class="lk-tag">Private · encrypted · offline</p>
+  </div>
+  <div class="lock-card lk-sheet">
+    <div class="lk-handle" aria-hidden="true"></div>
+    <h2 id="lock-title" class="lk-title">Welcome back</h2>
+    <p id="lock-sub" class="lk-sub">Your vault is locked. Unlock to see your gift cards.</p>
+    <form id="unlock-form" autocomplete="off">
+      <!-- 1.3.9: each password field has an eye, so what was typed can be
+           checked before the vault is created (closed-test bug: a vault was
+           created with a password the user never typed). -->
+      <div class="pw-field"><input id="pw" type="password" placeholder="Master password" autocomplete="current-password" autocapitalize="off" autocorrect="off" spellcheck="false" autofocus />
+        <button class="pw-eye" type="button" data-eye="pw" aria-label="Show password" aria-pressed="false"></button></div>
+      <!-- Strength meter: shown only while CHOOSING a password (first run),
+           never when typing a known one back in. Same rules as Card Vault. -->
+      <div class="pw-strength hidden" id="pw-strength">
+        <div class="pw-bars">
+          <span class="pw-seg"></span><span class="pw-seg"></span>
+          <span class="pw-seg"></span><span class="pw-seg"></span>
+          <span class="pw-seg"></span>
+        </div>
+        <div class="pw-meta">
+          <span class="pw-label" id="pw-strength-label"></span>
+          <span class="pw-hint" id="pw-strength-hint"></span>
+        </div>
+      </div>
+      <div class="pw-field hidden" id="pw2-wrap"><input id="pw2" type="password" placeholder="Confirm master password" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" />
+        <button class="pw-eye" type="button" data-eye="pw2" aria-label="Show password" aria-pressed="false"></button></div>
+      <p id="lock-err" class="err"></p>
+      <button type="submit" id="unlock-btn" class="primary">Unlock</button>
+      <!-- 1.3.9 (Card Vault 1.3.6): new users only; existing users are never
+           prompted - the terms live in Settings. -->
+      <p class="lock-terms hidden" id="lock-terms">By creating a vault you agree to the
+        <button type="button" class="linkish" id="lock-terms-link">Terms &amp; conditions</button>.</p>
+      <button type="button" id="bio-unlock-btn" class="bio-btn hidden">
+        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M12 2a9.7 9.7 0 0 0-5 1.4.9.9 0 1 0 .9 1.5A7.9 7.9 0 0 1 12 3.8a8 8 0 0 1 4.1 1.1.9.9 0 1 0 .9-1.5A9.7 9.7 0 0 0 12 2Zm0 3.6a6.4 6.4 0 0 0-6.4 6.4v3a.9.9 0 0 0 1.8 0v-3a4.6 4.6 0 0 1 9.2 0c0 2.3-.3 4.2-.9 5.8a.9.9 0 0 0 1.7.6c.7-1.8 1-3.9 1-6.4A6.4 6.4 0 0 0 12 5.6Zm0 3a3.4 3.4 0 0 0-3.4 3.4c0 2.6-.4 4.6-1.2 6a.9.9 0 0 0 1.6.9c1-1.7 1.4-4 1.4-6.9a1.6 1.6 0 0 1 3.2 0c0 3-.3 5.3-1 7a.9.9 0 0 0 1.7.6c.8-2 1.1-4.5 1.1-7.6A3.4 3.4 0 0 0 12 8.6Z"/></svg>
+        Unlock with fingerprint
+      </button>
+    </form>
+    <!-- Plan gate: replaces the form above once the 30-day free trial and any
+         paid year are over. 1.3.11: the two plans side by side (Yearly,
+         Lifetime), prices as the store states them. See billing.js. -->
+    <div id="sub-gate" class="sub-gate hidden">
+      <div id="sub-options" class="plan-options"></div>
+      <p id="sub-msg" class="err"></p>
+      <button type="button" id="sub-restore" class="link-btn">Already paid? Restore</button>
+    </div>
+    <p class="fineprint lk-fine"><span class="ico ico-sm" data-icon="lock"></span> Stays on this phone. No account, no internet.</p>
+  </div>
+</div>
+
+<!-- Dashboard -->
+<div id="app" class="hidden">
+  <header class="topbar" id="topbar">
+    <div class="brand"><span class="brand-mark gk-mark" aria-hidden="true"><svg viewBox="0 0 72 72" width="34" height="34"><g transform="translate(0 3.5)"><rect x="13" y="21" width="46" height="31" rx="7" fill="#ffffff"/><rect x="13" y="27" width="46" height="4.6" fill="#ff7a2f"/><rect x="21.5" y="21" width="4.6" height="31" fill="#ff7a2f"/><ellipse cx="19.2" cy="17.4" rx="5.2" ry="3.3" transform="rotate(-28 19.2 17.4)" fill="none" stroke="#ff7a2f" stroke-width="2.7"/><ellipse cx="28.4" cy="17.4" rx="5.2" ry="3.3" transform="rotate(28 28.4 17.4)" fill="none" stroke="#ff7a2f" stroke-width="2.7"/><circle cx="23.8" cy="21" r="3" fill="#ff7a2f"/><circle cx="39.5" cy="40" r="4.6" fill="#3a2fc9"/><path d="M37.09 42.53h4.83l1.61 6.21h-8.05z" fill="#3a2fc9"/><rect x="46" y="43.5" width="8" height="2.8" rx="1.4" fill="#3a2fc9" opacity=".55"/></g></svg></span><span class="brand-text"><small>YOUR PRIVATE</small>Gift Card Vault</span></div>
+    <div class="topbar-actions">
+      <!-- Search lives here as an icon and expands OVER the header (see
+           .topbar.is-searching) - Card Vault 1.3.1's fix for a permanent
+           search row eating the first screen. -->
+      <!-- 1.3.10 (feedback): Card Vault's header - the icon actions share one
+           soft tinted capsule on a phone, with Card Vault's own icons; the +
+           stands beside it. A plain wrapper (display: contents) on desktop. -->
+      <div class="act-group">
+      <button id="search-btn" class="icon-btn icon-only" type="button" title="Search cards" aria-label="Search cards">
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M9.5 3A6.5 6.5 0 0 0 3 9.5 6.5 6.5 0 0 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 0 0 9.5 3zm0 2C11.99 5 14 7.01 14 9.5S11.99 14 9.5 14 5 11.99 5 9.5 7.01 5 9.5 5z"/></svg>
+      </button>
+      <button id="vault-btn" class="icon-btn icon-only" type="button" title="Settings" aria-label="Settings">
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.488.488 0 0 0-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.484.484 0 0 0-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+      </button>
+      <button id="bell-btn" class="icon-btn icon-only bell-btn" type="button" title="Expiry alerts" aria-label="Expiry alerts">
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M12 22a2.2 2.2 0 0 0 2.2-2.2H9.8A2.2 2.2 0 0 0 12 22Zm6.6-6.4V11c0-3.1-1.7-5.7-4.6-6.4V4a2 2 0 0 0-4 0v.6C7.1 5.3 5.4 7.9 5.4 11v4.6L3.2 17.8v1.1h17.6v-1.1l-2.2-2.2Z"/></svg>
+        <span class="bell-badge hidden" id="bell-badge"></span>
+      </button>
+      <button id="archive-btn" class="icon-btn icon-only" type="button" title="Show archived cards" aria-label="Show archived cards" aria-pressed="false">
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M20.5 4h-17A1.5 1.5 0 0 0 2 5.5v2A1.5 1.5 0 0 0 3.5 9H4v9a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9h.5A1.5 1.5 0 0 0 22 7.5v-2A1.5 1.5 0 0 0 20.5 4ZM6 9h12v9H6V9Zm3.5 3h5a1 1 0 0 0 0-2h-5a1 1 0 0 0 0 2ZM4 6h16v1H4V6Z"/></svg>
+      </button>
+      <button id="theme-btn" class="icon-btn icon-only" type="button" title="Toggle theme" aria-label="Toggle theme">
+        <svg class="i-sun" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10Zm0-5h0m0 20h0M4 12H2m20 0h-2M5.6 5.6 4.2 4.2m15.6 15.6-1.4-1.4M5.6 18.4 4.2 19.8M19.8 4.2l-1.4 1.4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        <svg class="i-moon" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/></svg>
+      </button>
+      <button id="lock-btn" class="icon-btn icon-only" type="button" title="Lock vault" aria-label="Lock vault">
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M12 1 4 4.5V11c0 4.7 3.4 8.9 8 10 4.6-1.1 8-5.3 8-10V4.5L12 1Z" opacity=".18"/><path fill="currentColor" d="M12 6.5A2.5 2.5 0 0 0 9.5 9v1H9a1 1 0 0 0-1 1v4a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-4a1 1 0 0 0-1-1h-.5V9A2.5 2.5 0 0 0 12 6.5Zm-1 3.5V9a1 1 0 1 1 2 0v1h-2Z"/></svg>
+      </button>
+      </div>
+      <!-- Phone only: the add panel moves into a sheet (setupMobileLayout),
+           so the inventory is on the first screen instead of a long form. -->
+      <button id="add-open-btn" class="add-open hidden" type="button" title="Add a card" aria-label="Add a card">
+        <svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6V5Z"/></svg>
+      </button>
+    </div>
+
+    <!-- Expanded search. Replaces the header's contents rather than adding a
+         row, so searching costs no permanent vertical space. -->
+    <div class="topbar-search hidden" id="top-search">
+      <button class="icon-btn icon-only" id="search-back" type="button" aria-label="Close search">
+        <svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M20 11H7.8l5.6-5.6L12 4l-8 8 8 8 1.4-1.4L7.8 13H20v-2Z"/></svg>
+      </button>
+      <input id="search" type="search" inputmode="search" autocomplete="off" autocorrect="off"
+             spellcheck="false" enterkeyhint="search"
+             placeholder="Brand, code, order, notes…" aria-label="Search cards" />
+      <button class="icon-btn icon-only hidden" id="search-clear" type="button" aria-label="Clear search">
+        <svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="m6.4 5 5.6 5.6L17.6 5 19 6.4 13.4 12 19 17.6 17.6 19 12 13.4 6.4 19 5 17.6 10.6 12 5 6.4 6.4 5Z"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <main>
+    <!-- Hero: ONE card - the vault's value, and the four counts inside it as
+         a row of filters. (It was a value card plus four separate tiles below
+         it, ~260px of the first screen.) Same brand gradient as the app icon,
+         with the icon's ribbon and bow, so the two read as one product. -->
+    <section class="hero">
+      <div class="vault-value">
+        <svg class="vv-ribbon" viewBox="0 0 160 120" preserveAspectRatio="xMaxYMin meet" aria-hidden="true">
+          <rect x="96" y="-4" width="16" height="128" fill="#ffffff" fill-opacity=".16"/>
+          <rect x="-4" y="54" width="170" height="12" fill="#ffffff" fill-opacity=".10"/>
+          <g fill="none" stroke="#ff7a2f" stroke-width="6"><ellipse cx="90" cy="28" rx="15" ry="9" transform="rotate(-24 90 28)"/><ellipse cx="118" cy="28" rx="15" ry="9" transform="rotate(24 118 28)"/></g>
+          <circle cx="104" cy="31" r="6.5" fill="#ff7a2f"/>
+        </svg>
+        <span class="vv-label">VAULT VALUE</span>
+        <!-- 1.3.11 (B6): one arrow folds the card to a slim bar and opens it again. -->
+        <button type="button" id="vv-fold" class="vv-fold" aria-expanded="true" aria-label="Collapse the vault card">
+          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M7.4 15.4 6 14l6-6 6 6-1.4 1.4-4.6-4.6z"/></svg></button>
+        <!-- Plan pill: FREE TRIAL / PREMIUM (billing.js). Tapping opens Settings. -->
+        <button type="button" id="plan-pill" class="plan-pill hidden"></button>
+        <span class="vv-line"><span id="vv-amount" class="vv-amount">₹0</span>
+          <!-- 1.3.11 (B6): the eye beside the total hides it (₹ ••••) or shows it.
+               The choice stays as left, across locks and restarts. -->
+          <button type="button" id="vv-eye" class="vv-eye" aria-label="Hide vault value" aria-pressed="false"><svg class="i-eye" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M12 5c-5 0-9 4.5-10 7 1 2.5 5 7 10 7s9-4.5 10-7c-1-2.5-5-7-10-7Zm0 11.5a4.5 4.5 0 1 1 0-9 4.5 4.5 0 0 1 0 9Zm0-2.3a2.2 2.2 0 1 0 0-4.4 2.2 2.2 0 0 0 0 4.4Z"/></svg><svg class="i-eye-off" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M3.3 2 2 3.3l3.1 3.1C3.5 7.7 2.5 9.4 2 12c1 2.5 5 7 10 7 1.8 0 3.4-.5 4.8-1.3l3.9 3.9 1.3-1.3L3.3 2ZM12 16.5a4.5 4.5 0 0 1-4.1-6.3l1.7 1.7a2.2 2.2 0 0 0 2.5 2.5l1.7 1.7c-.6.3-1.2.4-1.8.4ZM12 5c5 0 9 4.5 10 7-.5 1.3-1.6 3-3.2 4.4l-3-3A4.5 4.5 0 0 0 10.6 7.6L8.3 5.3C9.5 5.1 10.7 5 12 5Z"/></svg></button></span>
+        <span id="vv-sub" class="vv-sub">across 0 active cards</span>
+        <!-- 1.3.10: one tile per store with its total (no codes). Only the
+             list below changes; the boxes, Stores and Sort keep working. -->
+        <label class="combine-toggle" for="combine-toggle">
+          <input type="checkbox" id="combine-toggle" />
+          <span class="ct-track" aria-hidden="true"><span class="ct-knob"></span></span>
+          <span class="ct-label">Combine by brand</span>
+        </label>
+        <div class="kpis">
+          <button class="kpi" data-status="active"><span class="kpi-ico ico-active"><span class="ico" data-icon="card"></span></span><span class="kpi-label">Active</span><span id="kpi-active" class="kpi-num">0</span></button>
+          <button class="kpi warn" data-status="expiring"><span class="kpi-ico ico-expiring"><span class="ico" data-icon="clock"></span></span><span class="kpi-label">Expiring</span><span id="kpi-expiring" class="kpi-num">0</span></button>
+          <button class="kpi" data-status="expired"><span class="kpi-ico ico-expired"><span class="ico" data-icon="hourglass"></span></span><span class="kpi-label">Expired</span><span id="kpi-expired" class="kpi-num">0</span></button>
+          <button class="kpi" data-status="redeemed"><span class="kpi-ico ico-redeemed"><span class="ico" data-icon="check"></span></span><span class="kpi-label">Redeemed</span><span id="kpi-redeemed" class="kpi-num">0</span></button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Add / paste panel -->
+    <section class="panel" id="add-panel">
+      <div class="panel-head"><span class="eyebrow">ADD A CARD</span></div>
+      <!-- 1.3.11 round 2: + opens on the ways in only - Scan card first and
+           biggest, then Upload / Paste / Type it in / Collect codes. Picking one
+           folds these into one slim bar ("Scan card · Other ways") and opens just
+           that option; the bar brings them back to switch. -->
+      <div class="add-launch" id="add-launch">
+        <button type="button" class="al-scan" id="in-scan"><svg viewBox="0 0 24 24" width="28" height="28" aria-hidden="true"><path fill="currentColor" d="M9 3 7.2 5H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-3.2L15 3H9Zm3 15a5 5 0 1 1 0-10 5 5 0 0 1 0 10Zm0-2a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/></svg><span class="al-t"><b>Scan card</b><small>Point the camera at a gift card, or a voucher on another screen</small></span></button>
+        <div class="al-grid">
+          <button type="button" class="al-tile" id="in-upload" data-mode="upload"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M11 16V7.8l-2.6 2.6L7 9l5-5 5 5-1.4 1.4L13 7.8V16h-2Zm-6 4a2 2 0 0 1-2-2v-3h2v3h14v-3h2v3a2 2 0 0 1-2 2H5Z"/></svg><b>Upload</b><small>Screenshots, PDF, bulk CSV file</small></button>
+          <button type="button" class="al-tile" id="in-paste" data-mode="paste"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M19 3h-4.2A3 3 0 0 0 12 1a3 3 0 0 0-2.8 2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2Zm-7 0a1 1 0 1 1 0 2 1 1 0 0 1 0-2Zm7 16H5V5h2v3h10V5h2v14Z"/></svg><b>Paste</b><small>One voucher or a bulk list - message, email, text</small></button>
+          <button type="button" class="al-tile" id="in-form" data-mode="form"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M3 17.2V21h3.8l11-11-3.8-3.8-11 11ZM20.7 7a1 1 0 0 0 0-1.4l-2.3-2.3a1 1 0 0 0-1.4 0l-1.8 1.8 3.7 3.7L20.7 7Z"/></svg><b>Type it in</b><small>Fill in the details</small></button>
+          <button type="button" class="al-tile" id="in-collect" data-mode="collect"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M16 1H4a2 2 0 0 0-2 2v14h2V3h12V1Zm3 4H8a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2Zm0 16H8V7h11v14Zm-6-2h2v-3h3v-2h-3V9h-2v3h-3v2h3v3Z"/></svg><b>Collect codes</b><small>From apps that block screenshots</small></button>
+        </div>
+        <button type="button" class="al-resume hidden" id="al-resume"></button>
+      </div>
+      <!-- Round 3: every option says where you are - "‹ Add a card" goes back
+           to the ways in; the three steps are the same for every way in:
+           1 read it (scan / upload / paste / collect), 2 check it, 3 save it. -->
+      <div class="add-nav hidden" id="add-nav">
+        <div class="an-top">
+        <button type="button" class="add-back" id="add-bar" aria-label="Back to Add a card"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M15.4 6.4 14 5l-7 7 7 7 1.4-1.4L9.8 12z"/></svg><span>Add a card</span></button>
+        <button type="button" class="add-reset hidden" id="add-reset"><svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true"><path fill="currentColor" d="M12 5V2L7 6l5 4V7a6 6 0 1 1-6 6H4a8 8 0 1 0 8-8Z"/></svg><span>Start over</span></button>
+        </div>
+        <ol class="add-steps" id="add-steps">
+          <li data-step="1"><i>1</i><span id="ab-name">Read</span></li>
+          <li data-step="2"><i>2</i><span>Check</span></li>
+          <li data-step="3"><i>3</i><span>Save</span></li>
+        </ol>
+        <p class="add-hint" id="add-hint" aria-live="polite"></p>
+      </div>
+      <!-- Collect codes (E7), round 2: say what it is and how, step by step. -->
+      <div class="collect-help" id="collect-help">
+        <p class="ch-lead">For apps that block screenshots, or show one code at a time.</p>
+        <ol class="ch-steps">
+          <li>Open the app or message where your gift card is.</li>
+          <li>Copy the code (long-press it, then <b>Copy</b>).</li>
+          <li>Come back here. The code is added to your list by itself.</li>
+          <li>Repeat for each code, then tap <b>Done</b> and save them.</li>
+        </ol>
+      </div>
+      <!-- Collect mode (E7): for apps that block screenshots. -->
+      <div class="collect-bar hidden" id="collect-bar" role="status">
+        <span class="cb-dot" aria-hidden="true"></span>
+        <span class="cb-text" id="collect-text">Collecting: copy a code in the other app, then come back here.</span>
+        <button type="button" class="cb-stop" id="collect-stop">Done</button>
+      </div>
+      <p class="intake-status" id="intake-status" aria-live="polite"></p>
+      <!-- The old tab row stays in the page, hidden: code opens a panel by
+           clicking its tab, and the mode bar above is what the user sees. -->
+      <div class="tabs tabs-hidden" aria-hidden="true">
+        <button class="tab" data-tab="scan" tabindex="-1">Scan</button>
+        <button class="tab active" data-tab="manual" tabindex="-1">Form</button>
+        <button class="tab" data-tab="quick" tabindex="-1">Paste</button>
+        <button class="tab" data-tab="upload" tabindex="-1">Upload</button>
+      </div>
+
+      <!-- Upload (round 2): screenshots, a PDF, a CSV file. -->
+      <div id="tab-upload" class="tab-body hidden">
+        <div class="up-list">
+          <button type="button" class="up-opt js-shot-multi" id="in-shot"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M19 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2Zm0 16H5V5h14v14Zm-5-7-3 3.7-2-2.4L6 17h12l-4-5Z"/></svg><span><b>Screenshots</b><small>One or many - every voucher in them is found</small></span></button>
+          <button type="button" class="up-opt" id="in-pdf"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6Zm4 18H6V4h7v5h5v11ZM8 13h1.5a1.5 1.5 0 0 1 0 3H9v2H8v-5Zm1 2h.5a.5.5 0 0 0 0-1H9v1Zm3-2h1.3a1.7 1.7 0 0 1 1.7 1.7v1.6a1.7 1.7 0 0 1-1.7 1.7H12v-5Zm1 4h.3a.7.7 0 0 0 .7-.7v-1.6a.7.7 0 0 0-.7-.7H13v3Zm3-4h3v1h-2v1h1.5v1H17v2h-1v-5Z"/></svg><span><b>PDF</b><small>A voucher email or invoice saved as a PDF</small></span></button>
+          <button type="button" class="up-opt" id="in-csv"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M3 3h18v18H3V3Zm2 2v4h6V5H5Zm8 0v4h6V5h-6Zm-8 6v4h6v-4H5Zm8 0v4h6v-4h-6Zm-8 6v2h6v-2H5Zm8 0v2h6v-2h-6Z"/></svg><span><b>Bulk CSV file</b><small>Many vouchers at once. Columns: store, code, PIN, amount, expiry, purchase date</small></span></button>
+        </div>
+      </div>
+
+      <!-- Scan: a LIVE viewfinder. Point the camera at a gift card (or an
+           e-voucher on another screen) and the fields below fill in as they
+           are read - no photo is taken, nothing is recorded or kept. Each
+           frame is read on the phone (scan.js) and a value is only "locked"
+           once two separate frames agree on it. Then the same review screen
+           as before: nothing is saved until the user confirms. -->
+      <div id="tab-scan" class="tab-body hidden">
+        <div id="cam-intro" class="cam-intro">
+          <div class="cam-intro-art" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M9 3 7.2 5H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-3.2L15 3H9Zm3 15a5 5 0 1 1 0-10 5 5 0 0 1 0 10Zm0-2a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/></svg></div>
+          <p class="cam-intro-text">Point your camera at a gift card, or at an e-voucher on another screen. The store, code, PIN, amount and validity fill in as they are read.</p>
+          <button type="button" id="cam-start" class="primary cam-start"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M9 3 7.2 5H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-3.2L15 3H9Zm3 15a5 5 0 1 1 0-10 5 5 0 0 1 0 10Zm0-2a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/></svg><span>Start scanning</span></button>
+          <!-- A voucher bought in another app on THIS phone can't be pointed
+               at - so: screenshot it, pick it here. Android's photo picker;
+               no storage permission, only the chosen picture is seen. -->
+          <button type="button" id="cam-shot" class="ghost cam-shot js-shot"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M19 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2Zm0 16H5V5h14v14Zm-5-7-3 3.7-2-2.4L6 17h12l-4-5Z"/></svg><span>From a screenshot</span></button>
+          <p class="shot-status" id="shot-status" aria-live="polite"></p>
+          <p class="fineprint">The camera is read on this phone. Nothing is photographed, recorded, saved or sent. Android asks for camera access the first time. A screenshot you pick is read here too, and not kept.</p>
+        </div>
+        <div id="cam-live" class="cam-live hidden">
+          <div class="cam-view" id="cam-view">
+            <video id="cam-video" playsinline muted autoplay></video>
+            <div class="cam-frame" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+            <div class="cam-scanline" aria-hidden="true"></div>
+            <!-- 1.3.11 (A1): the next back lens, remembered on this phone. -->
+            <button type="button" id="cam-lens" class="cam-torch cam-lens hidden" aria-label="Switch camera lens"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10Zm0 8a3 3 0 1 1 0-6 3 3 0 0 1 0 6ZM17.7 4.3 16.3 5.7A8 8 0 0 1 19.9 11H22a10 10 0 0 0-4.3-6.7ZM4.1 13H2a10 10 0 0 0 4.3 6.7l1.4-1.4A8 8 0 0 1 4.1 13Z"/></svg></button>
+            <button type="button" id="cam-torch" class="cam-torch hidden" aria-label="Torch" aria-pressed="false"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M7 2h10v4l-2 3v13H9V9L7 6V2Zm5 10a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3Z"/></svg></button>
+            <div class="cam-tip" id="cam-tip">Hold the card inside the frame</div>
+          </div>
+          <!-- Round 2: several vouchers in view - said loud, then one at a time. -->
+          <div class="found-banner hidden" id="lf-found" role="status"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M20 7h-2.2A3 3 0 0 0 12 3.8 3 3 0 0 0 6.2 7H4a1 1 0 0 0-1 1v3a1 1 0 0 0 1 1h1v8a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-8h1a1 1 0 0 0 1-1V8a1 1 0 0 0-1-1Zm-6-2a1 1 0 1 1 0 2h-1V6a1 1 0 0 1 1-1ZM9 6a1 1 0 0 1 2 0v1h-1a1 1 0 0 1-1-1Zm-4 3h6v2H5V9Zm2 4h4v6H7v-6Zm10 6h-4v-6h4v6Zm2-8h-6V9h6v2Z"/></svg><span><b id="lf-found-n">0 gift cards found</b><small>Check each with the arrows, then tap Use - nothing is saved yet.</small></span></div>
+          <div class="pv-pager lf-pager hidden" id="lf-pager">
+            <button type="button" class="icon-btn icon-only pv-nav" id="lf-prev" aria-label="Previous voucher"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M15.4 6.4 14 5l-7 7 7 7 1.4-1.4L9.8 12z"/></svg></button>
+            <div class="pv-mid"><span class="pv-pos" id="lf-pos"></span></div>
+            <button type="button" class="icon-btn icon-only pv-nav" id="lf-next" aria-label="Next voucher"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M8.6 6.4 10 5l7 7-7 7-1.4-1.4 5.6-5.6z"/></svg></button>
+          </div>
+          <!-- Round 3: what the camera reads can be corrected right here - type
+               over a value (it locks), or tap the lock to keep what is shown;
+               a locked value is never replaced by a later frame (Card Vault's
+               rule). Store has the same store list as everywhere else. -->
+          <div class="live-fields" id="live-fields" aria-live="polite">
+            <div class="lf" data-k="brand"><span class="lf-k">Store</span><input class="lf-v" id="lf-brand" data-k="brand" placeholder="—" autocomplete="off" autocorrect="off" spellcheck="false" autocapitalize="words" /><button type="button" class="lf-pin" data-pin="brand" aria-label="Lock store" aria-pressed="false"><svg class="i-unl" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M12 17a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm6-9H9V6a3 3 0 0 1 5.9-.8l1.9-.5A5 5 0 0 0 7 6v2H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V10a2 2 0 0 0-2-2Zm0 12H6V10h12v10Z"/></svg><svg class="i-lck" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M18 8h-1V6A5 5 0 0 0 7 6v2H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V10a2 2 0 0 0-2-2ZM9 6a3 3 0 0 1 6 0v2H9V6Zm3 11a2 2 0 1 1 0-4 2 2 0 0 1 0 4Z"/></svg></button><div class="sp-suggest hidden" id="lf-brand-sug" role="listbox"></div></div>
+            <div class="lf" data-k="code"><span class="lf-k">Code</span><input class="lf-v mono" id="lf-code" data-k="code" placeholder="—" autocomplete="off" autocorrect="off" spellcheck="false" autocapitalize="characters" /><button type="button" class="lf-pin" data-pin="code" aria-label="Lock code" aria-pressed="false"><svg class="i-unl" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M12 17a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm6-9H9V6a3 3 0 0 1 5.9-.8l1.9-.5A5 5 0 0 0 7 6v2H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V10a2 2 0 0 0-2-2Zm0 12H6V10h12v10Z"/></svg><svg class="i-lck" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M18 8h-1V6A5 5 0 0 0 7 6v2H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V10a2 2 0 0 0-2-2ZM9 6a3 3 0 0 1 6 0v2H9V6Zm3 11a2 2 0 1 1 0-4 2 2 0 0 1 0 4Z"/></svg></button></div>
+            <div class="lf" data-k="pin"><span class="lf-k">PIN</span><input class="lf-v mono" id="lf-pin" data-k="pin" placeholder="—" autocomplete="off" autocorrect="off" spellcheck="false" inputmode="numeric" /><button type="button" class="lf-pin" data-pin="pin" aria-label="Lock pin" aria-pressed="false"><svg class="i-unl" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M12 17a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm6-9H9V6a3 3 0 0 1 5.9-.8l1.9-.5A5 5 0 0 0 7 6v2H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V10a2 2 0 0 0-2-2Zm0 12H6V10h12v10Z"/></svg><svg class="i-lck" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M18 8h-1V6A5 5 0 0 0 7 6v2H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V10a2 2 0 0 0-2-2ZM9 6a3 3 0 0 1 6 0v2H9V6Zm3 11a2 2 0 1 1 0-4 2 2 0 0 1 0 4Z"/></svg></button></div>
+            <div class="lf" data-k="amount"><span class="lf-k">Amount</span><input class="lf-v" id="lf-amount" data-k="amount" placeholder="—" autocomplete="off" autocorrect="off" spellcheck="false" inputmode="decimal" /><button type="button" class="lf-pin" data-pin="amount" aria-label="Lock amount" aria-pressed="false"><svg class="i-unl" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M12 17a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm6-9H9V6a3 3 0 0 1 5.9-.8l1.9-.5A5 5 0 0 0 7 6v2H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V10a2 2 0 0 0-2-2Zm0 12H6V10h12v10Z"/></svg><svg class="i-lck" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M18 8h-1V6A5 5 0 0 0 7 6v2H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V10a2 2 0 0 0-2-2ZM9 6a3 3 0 0 1 6 0v2H9V6Zm3 11a2 2 0 1 1 0-4 2 2 0 0 1 0 4Z"/></svg></button></div>
+            <div class="lf" data-k="expiry"><span class="lf-k">Valid till</span><input class="lf-v" id="lf-expiry" data-k="expiry" placeholder="—" autocomplete="off" autocorrect="off" spellcheck="false" type="date" /><button type="button" class="lf-pin" data-pin="expiry" aria-label="Lock valid till" aria-pressed="false"><svg class="i-unl" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M12 17a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm6-9H9V6a3 3 0 0 1 5.9-.8l1.9-.5A5 5 0 0 0 7 6v2H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V10a2 2 0 0 0-2-2Zm0 12H6V10h12v10Z"/></svg><svg class="i-lck" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M18 8h-1V6A5 5 0 0 0 7 6v2H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V10a2 2 0 0 0-2-2ZM9 6a3 3 0 0 1 6 0v2H9V6Zm3 11a2 2 0 1 1 0-4 2 2 0 0 1 0 4Z"/></svg></button></div>
+          </div>
+          <div class="cam-actions">
+            <button type="button" id="cam-use" class="primary" disabled>Use these details</button>
+            <button type="button" id="cam-stop" class="ghost">Stop camera</button>
+          </div>
+        </div>
+        <div id="cam-error" class="cam-error hidden" role="alert">
+          <p id="cam-error-text"></p>
+          <div class="cam-actions">
+            <button type="button" id="cam-retry" class="primary">Try again</button>
+            <button type="button" id="cam-to-form" class="ghost">Type it in instead</button>
+            <button type="button" id="cam-shot-err" class="ghost js-shot">Use a screenshot</button>
+          </div>
+        </div>
+        <div id="scan-review" class="scan-review hidden">
+          <div class="scan-head">
+            <img id="scan-thumb2" class="scan-thumb sm" alt="" />
+            <div><b>Check what we read</b>
+              <p class="muted" id="scan-hint">Nothing is saved until you tap Save.</p></div>
+          </div>
+          <div class="seg" id="scan-type" role="radiogroup" aria-label="Voucher type">
+            <button type="button" role="radio" data-type="code">Code only</button>
+            <button type="button" role="radio" data-type="pin">Code + PIN</button>
+          </div>
+          <div class="scan-fields">
+            <label>Store <span class="flag" id="sf-brand"></span>
+              <input id="s-brand" autocomplete="off" autocapitalize="words" />
+              <div class="sp-suggest hidden" id="s-brand-sug" role="listbox"></div>
+              <span class="fix-note hidden" id="s-brand-note"></span></label>
+            <label>Code <span class="flag" id="sf-code"></span>
+              <input id="s-code" autocapitalize="characters" autocorrect="off" autocomplete="off" spellcheck="false" /></label>
+            <label id="s-pin-wrap">PIN <span class="flag" id="sf-pin"></span>
+              <input id="s-pin" inputmode="numeric" autocomplete="off" /></label>
+            <label>Amount <span class="flag" id="sf-amount"></span>
+              <input id="s-amount" inputmode="decimal" placeholder="e.g. 1000" /></label>
+            <label>Valid till <span class="flag" id="sf-expiry"></span>
+              <input id="s-expiry" type="date" /></label>
+          </div>
+          <p id="scan-err" class="err"></p>
+          <div class="preview-actions">
+            <button type="button" id="scan-save" class="primary">Save card</button>
+            <button type="button" id="scan-again" class="ghost">Scan again</button>
+          </div>
+          <!-- 1.3.9: keep this one and read the next - they collect in one
+               list, checked and saved together. -->
+          <button type="button" id="scan-to-list" class="linkish scan-to-list">Keep this one &amp; add another card</button>
+          <details class="scan-raw"><summary>What the scan read</summary><pre id="scan-text"></pre></details>
+        </div>
+      </div>
+
+      <div id="tab-manual" class="tab-body">
+        <div class="grid">
+          <label>Store <input id="f-brand" autocomplete="off" autocapitalize="words" placeholder="Start typing, e.g. Amazon" /><div class="sp-suggest hidden" id="f-brand-sug" role="listbox"></div><span class="fix-note hidden" id="f-brand-note"></span></label>
+          <label>Amount (face value) <input id="f-amount" inputmode="decimal" placeholder="e.g. 1000" /></label>
+          <label class="wide">Card / voucher code <input id="f-code" autocapitalize="characters" autocorrect="off" autocomplete="off" spellcheck="false" /></label>
+          <label>PIN <span class="opt">optional</span> <input id="f-pin" inputmode="numeric" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" /></label>
+          <!-- 1.3.9: a calendar, not a typed date (closed-test request). -->
+          <label>Expiry <span class="opt">optional</span> <input id="f-expiry" type="date" />
+            <!-- 1.3.11 (B9): some cards never expire (Google Play). -->
+            <span class="no-exp"><input type="checkbox" id="f-noexp" /> <span>No expiry</span></span></label>
+          <!-- 1.3.11 (B9): purchase date; some stores' rule fills the expiry from it. -->
+          <label>Purchase date <span class="opt">optional</span> <input id="f-purchased" type="date" /></label>
+          <p class="exp-rule hidden wide" id="f-exp-rule"></p>
+          <!-- Edit only: what is left on the card. -->
+          <label class="hidden" id="f-balance-wrap">Balance left <input id="f-balance" inputmode="decimal" placeholder="e.g. 750" /></label>
+          <label>Order number <span class="opt">optional</span> <input id="f-order" /></label>
+          <label>Redeem URL <span class="opt">optional</span> <input id="f-url" inputmode="url" autocapitalize="off" autocorrect="off" spellcheck="false" /></label>
+          <label class="wide">Notes <span class="opt">optional</span> <input id="f-notes" /></label>
+        </div>
+        <div class="edit-actions">
+          <button id="add-btn" class="primary">Save card</button>
+          <button id="edit-cancel" class="ghost hidden" type="button">Cancel</button>
+        </div>
+        <span id="add-msg" class="msg"></span>
+      </div>
+
+      <div id="tab-quick" class="tab-body hidden">
+        <button type="button" id="paste-clip" class="paste-clip">
+          <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M19 3h-4.2A3 3 0 0 0 12 1a3 3 0 0 0-2.8 2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2Zm-7 0a1 1 0 1 1 0 2 1 1 0 0 1 0-2Zm7 16H5V5h2v3h10V5h2v14Z"/></svg>
+          Paste from clipboard
+        </button>
+        <p class="paste-note"><b>Bulk text:</b> paste or type below - a voucher message, an email, or a list with one voucher per line
+          (store, code, PIN, amount, expiry). Every voucher in it is found.</p>
+        <div class="sp-wrap"><input id="paste-brand" autocomplete="off" autocapitalize="words" placeholder="Store (optional)" />
+        <div class="sp-suggest hidden" id="paste-brand-sug" role="listbox"></div></div>
+        <textarea id="paste-text" rows="10" placeholder="Myntra 6001220088551234 PIN 482910 Rs 500 31/12/2027&#10;Amazon AQ7K-2M9XPL-4TZ8 Rs 1000&#10;...one voucher per line"></textarea>
+        <button id="preview-btn" class="primary">Find the vouchers</button>
+        <span id="import-msg" class="msg"></span>
+
+      </div>
+
+      <!-- The review list (all ways in end here) - its own panel. -->
+        <div id="preview" class="preview hidden">
+        <!-- 1.3.11 (E3): the bulk review. A summary, "for all" setters,
+             rows flagged where the reader guessed, duplicates greyed. -->
+        <div class="preview-head">
+          <span id="preview-count" class="eyebrow">0 CARDS FOUND</span>
+          <span class="pv-sum" id="pv-sum"></span>
+          <span class="muted">Check each one, then save. Swipe or use the arrows to move between them.</span>
+        </div>
+        <div class="bulk-tools" id="bulk-tools">
+          <div class="sp-wrap bt-field"><input id="bulk-brand" autocomplete="off" autocapitalize="words" placeholder="Set store for all" aria-label="Set store for all" />
+            <div class="sp-suggest hidden" id="bulk-brand-sug" role="listbox"></div></div>
+          <label class="bt-field bt-date"><span>Expiry for all</span><input id="bulk-expiry" type="date" aria-label="Set expiry for all" /></label>
+        </div>
+        <!-- 1.3.11 round 2: one voucher at a time, ‹ 2 of 5 ›, dots to jump. -->
+                  <div class="found-banner hidden" id="pv-found" role="status"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M20 7h-2.2A3 3 0 0 0 12 3.8 3 3 0 0 0 6.2 7H4a1 1 0 0 0-1 1v3a1 1 0 0 0 1 1h1v8a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-8h1a1 1 0 0 0 1-1V8a1 1 0 0 0-1-1Zm-6-2a1 1 0 1 1 0 2h-1V6a1 1 0 0 1 1-1ZM9 6a1 1 0 0 1 2 0v1h-1a1 1 0 0 1-1-1Zm-4 3h6v2H5V9Zm2 4h4v6H7v-6Zm10 6h-4v-6h4v6Zm2-8h-6V9h6v2Z"/></svg><span><b id="pv-found-n">0 gift cards found</b><small>Check each one - arrows or swipe - then save them all.</small></span></div>
+          <div class="pv-pager hidden" id="pv-pager">
+          <button type="button" class="icon-btn icon-only pv-nav" id="pv-prev" aria-label="Previous voucher"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M15.4 6.4 14 5l-7 7 7 7 1.4-1.4L9.8 12z"/></svg></button>
+          <div class="pv-mid"><span class="pv-pos" id="pv-pos"></span><span class="pv-dots" id="pv-dots"></span></div>
+          <button type="button" class="icon-btn icon-only pv-nav" id="pv-next" aria-label="Next voucher"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M8.6 6.4 10 5l7 7-7 7-1.4-1.4 5.6-5.6z"/></svg></button>
+        </div>
+        <div id="preview-rows"></div>
+        <!-- 1.3.9: the list grows - another screenshot or another scanned
+             card is ADDED to it, never replaces it. -->
+        <div class="batch-more">
+          <button type="button" id="batch-shot" class="ghost js-shot"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M19 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2Zm0 16H5V5h14v14Zm-5-7-3 3.7-2-2.4L6 17h12l-4-5Z"/></svg><span>Add a screenshot</span></button>
+          <button type="button" id="batch-scan" class="ghost"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M9 3 7.2 5H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-3.2L15 3H9Zm3 15a5 5 0 1 1 0-10 5 5 0 0 1 0 10Zm0-2a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/></svg><span>Scan a card</span></button>
+        </div>
+        <!-- a removed voucher can come back for a few seconds -->
+        <div class="pv-undo hidden" id="pv-undo" role="status"><span id="pv-undo-text">Voucher removed</span><button type="button" id="pv-undo-btn">Undo</button></div>
+        <div class="preview-actions">
+          <button id="save-all-btn" class="primary">Save all</button>
+          <button id="cancel-preview-btn" class="ghost">Cancel</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Inventory -->
+    <section class="inventory">
+      <div class="inv-head">
+        <h2><span class="dim">Vault inventory</span><br />Gift <span class="accent">cards</span></h2>
+      </div>
+      <!-- Phone: one slim row of pills that summarise status + sort, each
+           opening #filter-sheet. #filters and #sort-wrap are MOVED into that
+           sheet at boot, so the desktop controls stay the one implementation. -->
+      <div class="mfilter-bar hidden" id="mfilter-bar"></div>
+      <div class="toolbar" id="sort-wrap">
+        <select id="sort">
+          <option value="recent">Sort by: Recently added</option>
+          <option value="expiry">Sort by: Expiry (soonest)</option>
+          <option value="amount">Sort by: Value (high → low)</option>
+          <option value="brand">Sort by: Brand (A → Z)</option>
+        </select>
+      </div>
+      <div class="filters" id="filters">
+        <button class="filter active" data-status="all">All</button>
+        <button class="filter" data-status="active">Active</button>
+        <button class="filter" data-status="expiring">Expiring soon</button>
+        <button class="filter" data-status="expired">Expired</button>
+        <button class="filter" data-status="redeemed">Redeemed</button>
+      </div>
+
+      <!-- Live summary of the filtered view — hidden until a search/filter is applied -->
+      <div id="filter-summary" class="filter-summary hidden" aria-live="polite">
+        <span class="fs-chip"><span class="fs-ico"><span class="ico" data-icon="card"></span></span><span id="fs-count" class="fs-val">0 cards</span></span>
+        <span class="fs-chip fs-chip-value"><span class="fs-ico"><span class="ico" data-icon="vault"></span></span><span id="fs-value" class="fs-val">₹0</span><span class="fs-note">total value</span></span>
+      </div>
+
+      <div id="cards"></div>
+      <p id="empty" class="empty hidden">No cards in this view. Add a card or paste some text above to get started.</p>
+    </section>
+
+    <footer class="site-footer">
+      <img src="yourcardjourney.png" alt="Your Card Journey" class="footer-logo" />
+      <span class="footer-text">Shared by <span class="handle">@YourCardJourney</span></span>
+    </footer>
+  </main>
+</div>
+
+<div id="toast" class="toast hidden"></div>
+<!-- 1.3.11 (B7): after deleting a store's cards - Undo for 10 seconds. A
+     strip with a draining line, not a pop-up. -->
+<div id="undo-bar" class="undo-bar hidden" role="status" aria-live="polite">
+  <span id="undo-text" class="undo-text"></span>
+  <button type="button" id="undo-btn" class="undo-btn">Undo</button>
+  <i class="undo-time" id="undo-time" aria-hidden="true"></i>
+</div>
+
+<!-- Settings: auto-lock, fingerprint unlock, backup & transfer. Reuses the
+     licence panel's modal shell, which is why the ids around it are still
+     lic-*. The wording is deliberately blunt: the exported file is still
+     encrypted, and still only as strong as the master password on it. -->
+<div id="lic-modal" class="lic-scrim hidden">
+  <div class="lic-dialog" role="dialog" aria-modal="true" aria-labelledby="lic-title">
+    <div class="lic-head">
+      <h2 id="lic-title">Settings</h2>
+      <button id="lic-close" class="icon-btn icon-only" title="Close" aria-label="Close"><svg class="x-ico" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="m6.4 5 5.6 5.6L17.6 5 19 6.4 13.4 12 19 17.6 17.6 19 12 13.4 6.4 19 5 17.6 10.6 12 5 6.4z"/></svg></button>
+    </div>
+    <div class="lic-body">
+
+      <!-- Your plan (billing.js): trial days left, or Premium. No Manage
+           button (user's call, 05-Oct-2026) - cancelling and payment changes
+           are done in the Play Store's Payments & subscriptions. -->
+      <section class="vault-block hidden" id="plan-block">
+        <h3 class="vault-h">Your plan</h3>
+        <div class="plan-row">
+          <span class="plan-ico" id="plan-ico"></span>
+          <div class="plan-text"><b id="plan-name"></b><span class="vault-note" id="plan-note"></span></div>
+          <!-- 1.3.11 (C3): buy before the trial ends; yearly can move to Lifetime. -->
+          <button type="button" id="plan-upgrade" class="primary plan-up hidden">Upgrade</button>
+        </div>
+        <!-- 1.3.11 (C4): Lifetime bought while the yearly plan still renews.
+             The app cannot cancel a subscription; the store can. -->
+        <div class="plan-both hidden" id="plan-both">
+          <p class="vault-note">You have Lifetime, and your yearly plan is still set to renew. Cancel it in the Play Store so you are not charged again.</p>
+          <button type="button" id="plan-manage" class="ghost">Open Play Store subscriptions</button>
+        </div>
+      </section>
+
+      <section class="vault-block">
+        <h3 class="vault-h">On this phone</h3>
+        <p class="vault-note" id="vault-backup-count">&hellip;</p>
+        <p class="fineprint">Your cards live in this app&rsquo;s private storage,
+          encrypted with your master password. Uninstalling the app deletes
+          them, so keep an export somewhere safe.</p>
+      </section>
+
+      <section class="vault-block" id="lock-block">
+        <h3 class="vault-h">Auto-lock</h3>
+        <p class="vault-note">When to lock the vault after you switch to another
+          app. Copying a voucher code usually means a trip to a shopping app and
+          back, so this is not set to lock instantly.</p>
+        <div class="lock-choices" id="lock-choices"></div>
+        <p class="fineprint">Whatever you choose, your codes are never shown in
+          the recent-apps preview, and the vault always locks when the app is
+          closed.</p>
+      </section>
+
+      <!-- 1.3.11 round 2: four sizes, starting on the phone's own. -->
+      <section class="vault-block" id="text-block">
+        <h3 class="vault-h">Text size</h3>
+        <p class="vault-note">Starts on your phone's own font size. Pick another just for Gift Card Vault.</p>
+        <div class="lock-choices text-choices" id="text-choices">
+          <button type="button" class="lock-choice" data-zoom="85">Small</button>
+          <button type="button" class="lock-choice" data-zoom="100">Medium</button>
+          <button type="button" class="lock-choice" data-zoom="115">Large</button>
+          <button type="button" class="lock-choice" data-zoom="130">Extra large</button>
+        </div>
+      </section>
+
+      <section class="vault-block hidden" id="bio-block">
+        <h3 class="vault-h">Fingerprint unlock</h3>
+        <p class="vault-note">Opens the vault with your fingerprint instead of
+          typing the master password. Your password is kept in this phone&rsquo;s
+          secure store and released only on a match.</p>
+        <p class="fineprint">This is a convenience, not a second lock &mdash; the
+          vault file itself is protected by your master password exactly as
+          before, and you can always type it instead. Because you will rarely
+          type it, it is worth making it a long one.</p>
+        <label class="vault-check">
+          <input type="checkbox" id="bio-toggle" />
+          <span>Unlock with fingerprint on this phone</span>
+        </label>
+        <!-- 1.3.9 (Card Vault 1.3.8): sub-option of the switch above, OFF by
+             default, shown only while it is on. -->
+        <label class="vault-check vault-sub hidden" id="bio-auto-row">
+          <input type="checkbox" id="bio-auto-toggle" />
+          <span id="bio-auto-label">Unlock with fingerprint when the app opens</span>
+        </label>
+        <!-- 1.3.11 (A11, Card Vault feedback): say what the sub-option does. -->
+        <p class="fineprint vault-sub hidden" id="bio-auto-note">On: opening the app asks for your fingerprint straight away, so the vault opens without tapping anything. Off: the lock screen waits until you tap the fingerprint button. After you press Lock yourself, it always waits.</p>
+        <p class="err hidden" id="bio-msg"></p>
+      </section>
+
+      <!-- Change master password (1.3.9, Card Vault 1.3.5). Re-encrypts the
+           vault under the new password; fingerprint unlock, if on, follows. -->
+      <section class="vault-block" id="pw-block">
+        <h3 class="vault-h">Master password</h3>
+        <p class="vault-note">Change the password that encrypts your cards. You need the current one.</p>
+        <p class="pw-done hidden" id="pw-done" role="status"></p>
+        <button type="button" id="pw-change-open" class="ghost pw-open">Change master password</button>
+        <form id="pw-form" class="pw-form hidden" autocomplete="off">
+          <div class="pw-field"><input id="pw-cur" type="password" placeholder="Current password" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" />
+            <button class="pw-eye" type="button" data-eye="pw-cur" aria-label="Show password" aria-pressed="false"></button></div>
+          <div class="pw-field"><input id="pw-new" type="password" placeholder="New password" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" />
+            <button class="pw-eye" type="button" data-eye="pw-new" aria-label="Show password" aria-pressed="false"></button></div>
+          <div class="pw-strength hidden" id="pw-new-strength">
+            <div class="pw-bars">
+              <span class="pw-seg"></span><span class="pw-seg"></span>
+              <span class="pw-seg"></span><span class="pw-seg"></span>
+              <span class="pw-seg"></span>
+            </div>
+            <div class="pw-meta">
+              <span class="pw-label" id="pw-new-strength-label"></span>
+              <span class="pw-hint" id="pw-new-strength-hint"></span>
+            </div>
+          </div>
+          <div class="pw-field"><input id="pw-new2" type="password" placeholder="Confirm new password" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" />
+            <button class="pw-eye" type="button" data-eye="pw-new2" aria-label="Show password" aria-pressed="false"></button></div>
+          <p class="err hidden" id="pw-msg"></p>
+          <div class="pw-actions">
+            <button type="button" id="pw-cancel" class="ghost">Cancel</button>
+            <button type="submit" id="pw-submit" class="primary">Change password</button>
+          </div>
+          <p class="fineprint">Backups you exported earlier still open with the password they were made with.</p>
+        </form>
+      </section>
+
+      <section class="vault-block">
+        <h3 class="vault-h">Export</h3>
+        <p class="vault-note">Saves an encrypted copy you can share to Drive, mail
+          or a cable. It is the same file format the Windows and Mac apps use,
+          so it opens there too &mdash; with this same master password.</p>
+        <button type="button" id="vault-export" class="primary">Export backup</button>
+        <!-- 1.3.11 (C5): the export is a paid-plan feature; importing is not. -->
+        <p class="fineprint hidden" id="export-lock-note">Export comes with Yearly or Lifetime. Importing a backup works on every plan.</p>
+      </section>
+
+      <!-- 1.3.10 (feedback #2): Card Vault's step-by-step, in place of the
+           one-line tip. App data is NOT carried over (backup is off on
+           purpose) - only the exported file moves the cards. -->
+      <section class="vault-block" id="move-block">
+        <h3 class="vault-h">Changing phones?</h3>
+        <p class="vault-note">Your gift cards do not move by themselves. Four steps:</p>
+        <ol class="move-steps">
+          <li><b>Export</b> above (Yearly or Lifetime) and send the file somewhere you can reach from the new phone: Drive, email, or a chat to yourself.</li>
+          <li><b>Install Gift Card Vault</b> on the new phone with the same Google account. Your plan follows that account: tap Restore if it does not show.</li>
+          <li><b>Create a vault</b> there. Using the same master password keeps things simple.</li>
+          <li><b>Import</b> the file below on the new phone, with the password it was exported with. Then turn fingerprint unlock on again.</li>
+        </ol>
+      </section>
+
+      <section class="vault-block">
+        <h3 class="vault-h">Import</h3>
+        <p class="vault-note">Open a <code>GiftCardVault_&lt;date&gt;.dat</code> backup made with Export, on this
+          phone or another one. A <code>vault.dat</code> from the PC or Mac app opens too.</p>
+        <input id="vault-import-pw" type="password" autocomplete="off"
+               placeholder="Master password of that file" />
+        <label class="vault-check">
+          <input type="checkbox" id="vault-merge" />
+          <span>Add to what is already here, instead of replacing it</span>
+        </label>
+        <p id="vault-msg" class="err"></p>
+        <button type="button" id="vault-import" class="primary">Choose a file to import</button>
+      </section>
+
+      <!-- 1.3.11 (D2): off by default. -->
+      <section class="vault-block" id="checkout-block">
+        <h3 class="vault-h">Checkout mode</h3>
+        <p class="vault-note">For paying in a shop. When you open a gift card, it also shows the code as a barcode
+          or QR code and turns the screen to full brightness, so the cashier can scan it from your phone.</p>
+        <label class="vault-check">
+          <input type="checkbox" id="checkout-toggle" />
+          <span>Show a barcode / QR code when I open a card</span>
+        </label>
+        <p class="fineprint">Not every shop's scanner accepts a code shown this way. If it does not scan, read the code out or let the cashier type it. Brightness goes back to normal when you close the card.</p>
+      </section>
+
+      <!-- 1.3.11 round 2: one button; the stores are listed only when asked for. -->
+      <section class="vault-block" id="stores-block">
+        <h3 class="vault-h">Delete stores</h3>
+        <p class="vault-note">Delete every card of one or more stores at once - archived ones too. It counts down
+          from 5 and asks for your fingerprint or master password, and you can undo it for 10 seconds.</p>
+        <button type="button" id="ms-open" class="ghost pw-open">Choose stores to delete</button>
+      </section>
+
+      <!-- Terms & conditions (1.3.9). Read-only, never blocking. -->
+      <section class="vault-block" id="terms-block">
+        <h3 class="vault-h">Terms &amp; conditions</h3>
+        <p class="vault-note">How Gift Card Vault keeps your gift cards, and what it cannot do for you.</p>
+        <button type="button" id="terms-open" class="ghost pw-open">Read terms &amp; conditions</button>
+      </section>
+
+      <p class="fineprint lic-foot">Nothing in this app talks to a network. There
+        is no account, no sync and no server &mdash; a file only ever leaves
+        this phone because you chose to share it.</p>
+      <!-- 1.3.11 (A11): version and which reader the scanner uses, for support. -->
+      <section class="vault-block about-block">
+        <h3 class="vault-h">About</h3>
+        <div class="about-row"><span>Version</span><b id="app-ver-num">&hellip;</b></div>
+      </section>
+    </div>
+  </div>
+</div>
+
+
+<!-- Expiry alerts (1.3.10): the bell in the header opens this. -->
+<div id="bell-sheet" class="lic-scrim sheet-scrim hidden">
+  <div class="lic-dialog bell-tray" role="dialog" aria-modal="true" aria-labelledby="bell-title">
+    <div class="lic-head">
+      <h2 id="bell-title">Expiry alerts</h2>
+      <span class="bell-meta"><span id="bell-count" class="bell-count"></span>
+        <button type="button" id="bell-edit" class="bell-edit hidden">Edit</button>
+        <button id="bell-close" class="icon-btn icon-only" type="button" title="Close" aria-label="Close"><svg class="x-ico" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="m6.4 5 5.6 5.6L17.6 5 19 6.4 13.4 12 19 17.6 17.6 19 12 13.4 6.4 19 5 17.6 10.6 12 5 6.4z"/></svg></button></span>
+    </div>
+    <div class="lic-body">
+      <ol id="bell-list" class="bell-list"></ol>
+      <p id="bell-full" class="bell-full hidden">I can only hold 10 alerts here &mdash; these are the 10 soonest.</p>
+      <p id="bell-end" class="bell-end hidden">&middot; &middot; &middot; end of alerts &middot; &middot; &middot;</p>
+    </div>
+  </div>
+</div>
+
+<!-- Phone filter sheet. Empty in the markup: setupMobileLayout() moves the
+     desktop's own #filters and #sort-wrap into it. -->
+<div id="filter-sheet" class="lic-scrim sheet-scrim hidden">
+  <div class="lic-dialog" role="dialog" aria-modal="true" aria-labelledby="filter-title">
+    <div class="lic-head">
+      <h2 id="filter-title">Filter &amp; sort</h2>
+      <button id="filter-close" class="icon-btn icon-only" type="button" title="Close" aria-label="Close"><svg class="x-ico" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="m6.4 5 5.6 5.6L17.6 5 19 6.4 13.4 12 19 17.6 17.6 19 12 13.4 6.4 19 5 17.6 10.6 12 5 6.4z"/></svg></button>
+    </div>
+    <div class="lic-body" id="filter-sheet-body"></div>
+  </div>
+</div>
+
+<!-- Phone add sheet. Same trick: #add-panel is moved in here at boot. -->
+<div id="add-sheet" class="lic-scrim sheet-scrim hidden">
+  <div class="lic-dialog" role="dialog" aria-modal="true" aria-labelledby="add-title">
+    <div class="lic-head">
+      <h2 id="add-title">Add a card</h2>
+      <button id="add-close" class="icon-btn icon-only" type="button" title="Close" aria-label="Close"><svg class="x-ico" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="m6.4 5 5.6 5.6L17.6 5 19 6.4 13.4 12 19 17.6 17.6 19 12 13.4 6.4 19 5 17.6 10.6 12 5 6.4z"/></svg></button>
+    </div>
+    <div class="lic-body" id="add-sheet-body"></div>
+  </div>
+</div>
+
+<!-- Terms & conditions (1.3.9) - Card Vault's, written for gift cards. -->
+<div id="terms-sheet" class="lic-scrim sheet-scrim hidden">
+  <div class="lic-dialog" role="dialog" aria-modal="true" aria-labelledby="terms-title">
+    <div class="lic-head">
+      <h2 id="terms-title">Terms &amp; conditions</h2>
+      <button id="terms-close" class="icon-btn icon-only" type="button" title="Close" aria-label="Close"><svg class="x-ico" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="m6.4 5 5.6 5.6L17.6 5 19 6.4 13.4 12 19 17.6 17.6 19 12 13.4 6.4 19 5 17.6 10.6 12 5 6.4z"/></svg></button>
+    </div>
+    <div class="lic-body terms">
+      <p class="terms-date">Last updated 22 October 2026</p>
+      <p class="vault-note">By using Gift Card Vault you agree to the points below. They explain what this app does with your gift cards, and what it cannot do for you.</p>
+      <ol class="terms-list">
+        <li><b>Your gift cards stay on this phone.</b> Everything you add is stored only on this phone, encrypted with your master password. YourCardJourney runs no server, keeps no copy, and cannot see, access or restore your gift cards.</li>
+        <li><b>Your master password cannot be recovered.</b> There is no reset. If it is forgotten, the gift cards in this vault cannot be opened by you or by us.</li>
+        <li><b>Backups are your responsibility.</b> Uninstalling the app, clearing its data, or resetting or losing the phone deletes the vault. Only an export you made yourself can bring it back.</li>
+        <li><b>Keep your phone secure.</b> Use a screen lock. If fingerprint unlock is on, anyone whose fingerprint was enrolled on this phone when you turned it on can open the vault. Adding a new fingerprint switches it off until you turn it on again.</li>
+        <li><b>What you copy, export or share leaves the app&rsquo;s protection.</b> Copied codes are cleared from the clipboard after a short time on a best-effort basis. Text or files you share are kept wherever you send them.</li>
+        <li><b>A gift card code is money.</b> Anyone who has the code (and PIN) can usually spend it. Store only gift cards that are yours, or that you hold with their owner&rsquo;s consent.</li>
+        <li><b>Gift Card Vault is not a store, a bank or a payment app.</b> It does not sell, redeem or check the balance of any gift card, and it is not affiliated with or endorsed by any store or brand. Store names belong to their owners and are used only to label your cards.</li>
+        <li><b>Check what the app fills in.</b> The scanner, the screenshot and paste readers, balances and expiry reminders are aids. Always check a gift card&rsquo;s details with its issuer before you rely on them.</li>
+        <li><b>Plans.</b> After the free trial, opening the vault needs a paid plan: a yearly subscription, billed and renewed by the app store you bought it from and cancelled there, or Lifetime, paid once. The encrypted export is part of the paid plans. Your gift cards are never deleted when a subscription ends.</li>
+        <li><b>The app is provided &ldquo;as is&rdquo;, without warranties.</b> To the extent the law allows, YourCardJourney is not liable for any loss arising from a lost, stolen or compromised phone, a forgotten master password, deleted data, an expired or already-used gift card, or the use or misuse of gift card details. Our total liability is limited to the subscription fees you paid in the twelve months before the claim.</li>
+        <li><b>Governing law.</b> These terms are governed by the laws of India, and any dispute is subject to the courts of Hyderabad, Telangana. We may update these terms in a future version of the app; continuing to use the app means you accept the updated terms.</li>
+      </ol>
+      <h3 class="vault-h terms-sec">How your gift cards are protected</h3>
+      <ul class="terms-list">
+        <li><b>Nothing central to hack.</b> There is no account, no server and no cloud copy of your vault.</li>
+        <li><b>Strong encryption.</b> Your gift cards are kept in one AES-encrypted file with a tamper check, locked with a key made from your master password.</li>
+        <li><b>Fingerprint unlock lives in the secure chip.</b> If you turn it on, your master password is kept in the phone&rsquo;s secure hardware and released only on a fingerprint match.</li>
+        <li><b>No internet access.</b> The internet permission is removed from the app, so Android itself blocks any network connection. Subscriptions go through the Play Store app.</li>
+        <li><b>It never leaves on its own.</b> Android cloud backup and phone-to-phone transfer are turned off for this app, and debugging is off.</li>
+        <li><b>Hidden from view.</b> Screenshots, screen recording, screen sharing and the recent-apps preview are blocked. Apps that misuse accessibility cannot read the vault, and other apps cannot draw over it while it is open.</li>
+        <li><b>Only Gift Card Vault&rsquo;s own code runs.</b> Text you share in, a screenshot or a file you import can add gift cards, never run anything.</li>
+        <li><b>The small things too.</b> Codes are masked until you tap and hide again after 45 seconds, copied codes clear from the clipboard after 45 seconds, and scanning runs offline on the phone.</li>
+      </ul>
+      <p class="vault-note">Privacy policy: yourcardjourney.store/privacy/giftcard-vault<br />Questions: <b>hello@yourcardjourney.store</b></p>
+      <button type="button" id="terms-done" class="primary">Done</button>
+    </div>
+  </div>
+</div>
+
+<!-- Checkout view: tap a card. The code big, for a till or a payment page. -->
+<div id="use-sheet" class="lic-scrim sheet-scrim hidden">
+  <div class="lic-dialog use-dialog" role="dialog" aria-modal="true" aria-labelledby="use-brand">
+    <div class="lic-head">
+      <h2 id="use-brand">Gift card</h2>
+      <!-- 1.3.11 (B2): the next / previous card in the list, without going back. -->
+      <span class="use-nav" id="use-nav">
+        <button type="button" id="use-prev" class="icon-btn icon-only" aria-label="Previous card"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M15.4 6.4 14 5l-7 7 7 7 1.4-1.4L9.8 12z"/></svg></button>
+        <span id="use-pos" class="use-pos"></span>
+        <button type="button" id="use-next" class="icon-btn icon-only" aria-label="Next card"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M8.6 6.4 10 5l7 7-7 7-1.4-1.4 5.6-5.6z"/></svg></button>
+      </span>
+      <button id="use-close" class="icon-btn icon-only" type="button" title="Close" aria-label="Close"><svg class="x-ico" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="m6.4 5 5.6 5.6L17.6 5 19 6.4 13.4 12 19 17.6 17.6 19 12 13.4 6.4 19 5 17.6 10.6 12 5 6.4z"/></svg></button>
+    </div>
+    <div class="lic-body">
+      <div class="use-face-card">
+        <span class="gc-glyph" id="use-glyph"></span>
+        <div><div class="use-value"><span id="use-balance" class="use-balance">₹0</span> <span id="use-face" class="use-face"></span></div></div>
+      </div>
+      <div class="use-block">
+        <span class="use-k">Code</span>
+        <div id="use-code" class="use-code"></div>
+        <button type="button" id="use-copy-code" class="primary use-copy">Copy code</button>
+      </div>
+      <div class="use-block" id="use-pin-row">
+        <span class="use-k">PIN</span>
+        <div id="use-pin" class="use-code use-pin"></div>
+        <button type="button" id="use-copy-pin" class="ghost use-copy">Copy PIN</button>
+      </div>
+      <!-- 1.3.11 (D2, Settings > Checkout mode, off by default): the code as
+           a barcode or QR for a shop's scanner, the screen at full brightness. -->
+      <div class="use-scan hidden" id="use-scan">
+        <div class="seg use-scan-seg" role="radiogroup" aria-label="Code type">
+          <button type="button" role="radio" data-kind="bar" aria-checked="true">Barcode</button>
+          <button type="button" role="radio" data-kind="qr" aria-checked="false">QR code</button>
+        </div>
+        <div class="use-scan-art" id="use-scan-art"></div>
+        <p class="use-scan-note" id="use-scan-note">Hold the screen flat under the shop's scanner.</p>
+      </div>
+      <p id="use-expiry" class="use-expiry"></p>
+      <div class="use-actions">
+        <button type="button" id="use-redeem" class="ghost">I spent some of it</button>
+        <a id="use-link" class="ghost use-link hidden" href="#" rel="noopener">Open redeem page</a>
+      </div>
+      <p class="fineprint">The screen stays on while this is open. Copied values clear from the clipboard after 45 seconds.</p>
+    </div>
+  </div>
+</div>
+
+<!-- Spend sheet: replaces the desktop's prompt(). -->
+<div id="spend-sheet" class="lic-scrim sheet-scrim hidden">
+  <div class="lic-dialog" role="dialog" aria-modal="true" aria-labelledby="spend-title">
+    <div class="lic-head">
+      <h2 id="spend-title">Gift card</h2>
+      <button id="spend-close" class="icon-btn icon-only" type="button" title="Close" aria-label="Close"><svg class="x-ico" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="m6.4 5 5.6 5.6L17.6 5 19 6.4 13.4 12 19 17.6 17.6 19 12 13.4 6.4 19 5 17.6 10.6 12 5 6.4z"/></svg></button>
+    </div>
+    <form class="lic-body" id="spend-form" autocomplete="off">
+      <label class="spend-label" for="spend-amount">How much did you spend?</label>
+      <div class="spend-input"><span>₹</span><input id="spend-amount" inputmode="decimal" enterkeyhint="done" placeholder="0" /></div>
+      <p id="spend-left" class="spend-left">Enter what you spent</p>
+      <p id="spend-err" class="err"></p>
+      <div class="spend-actions">
+        <button type="button" id="spend-all" class="ghost">Used it all</button>
+        <button type="submit" id="spend-save" class="primary" disabled>Save</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Plans (1.3.11): Yearly or Lifetime. From Settings > Upgrade, the plan
+     pill, or a Premium lock (export). Buying goes through Google's sheet. -->
+<div id="plan-sheet" class="lic-scrim sheet-scrim hidden">
+  <div class="lic-dialog plan-dialog" role="dialog" aria-modal="true" aria-labelledby="plan-title">
+    <div class="lic-head">
+      <h2 id="plan-title">Choose your plan</h2>
+      <button id="plan-close" class="icon-btn icon-only" type="button" title="Close" aria-label="Close"><svg class="x-ico" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="m6.4 5 5.6 5.6L17.6 5 19 6.4 13.4 12 19 17.6 17.6 19 12 13.4 6.4 19 5 17.6 10.6 12 5 6.4z"/></svg></button>
+    </div>
+    <div class="lic-body">
+      <p class="plan-why hidden" id="plan-why"></p>
+      <div class="plan-options" id="plan-options"></div>
+      <p id="plan-msg" class="err"></p>
+      <p class="fineprint">Both plans open everything in the app, including the encrypted export. Payment goes through Google Play.</p>
+    </div>
+  </div>
+</div>
+
+<!-- Delete stores (1.3.11 round 2): tick one or more, then Delete. -->
+<div id="ms-sheet" class="lic-scrim sheet-scrim hidden">
+  <div class="lic-dialog" role="dialog" aria-modal="true" aria-labelledby="ms-title">
+    <div class="lic-head">
+      <h2 id="ms-title">Delete stores</h2>
+      <button id="ms-close" class="icon-btn icon-only" type="button" title="Close" aria-label="Close"><svg class="x-ico" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="m6.4 5 5.6 5.6L17.6 5 19 6.4 13.4 12 19 17.6 17.6 19 12 13.4 6.4 19 5 17.6 10.6 12 5 6.4z"/></svg></button>
+    </div>
+    <div class="lic-body">
+      <ul class="ms-list" id="ms-list"></ul>
+      <div class="ms-foot">
+        <span class="ms-sum" id="ms-sum">Nothing picked</span>
+        <button type="button" class="danger" id="ms-delete" disabled>Delete</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Small dialog: confirm-with-password (enabling fingerprint). -->
+<div id="modal" class="lic-scrim modal-scrim hidden">
+  <div class="lic-dialog modal-box" role="dialog" aria-modal="true" id="modal-box"></div>
+</div>
+
+<!-- Load order matters: the core files build up window.YCJ, parse.js adds the
+     paste engine, api.js hangs the route table off it, and app.js (the desktop
+     UI, unchanged) consumes window.YCJ.api. -->
+<script src="core/fernet.js?v=c2145f07"></script>
+<script src="core/store.js?v=e1701bec"></script>
+<script src="core/vault.js?v=c59572be"></script>
+<script src="core/mobile.js?v=d92dc155"></script>
+<script src="parse.js?v=bff0003f"></script>
+<script src="brands.js?v=b50ee258"></script>
+<script src="scan.js?v=9bc0deb9"></script>
+<script src="reconcile.js?v=c59e0568"></script>
+<script src="billing.js?v=ad2de4dd"></script>
+<script src="codes.js?v=d96e30c9"></script>
+<script src="api.js?v=0a8c6b0f"></script>
+<script src="demo-data.js"></script>
+<script src="demo.js"></script>
+</body>
+</html>

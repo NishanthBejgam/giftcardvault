@@ -1,0 +1,1644 @@
+/*
+ * mobile.css - the phone layer over Gift Card Vault's desktop stylesheet.
+ *
+ * style.css ships UNCHANGED from the desktop build, for the same reason as in
+ * Card Vault: the moment the two diverge, a fix made on one platform stops
+ * arriving on the other, and this suite already carries three product lines.
+ * Everything a phone needs is an override here.
+ *
+ * 1.3 brought over Card Vault's 1.2.1-1.3.3 work (master password rules,
+ * fingerprint, auto-lock picker, header search, filter/add sheets, compact
+ * first screen) - drawn in THIS app's tokens (blue --accent, indigo), never
+ * Card Vault's purple.
+ */
+
+/* --- safe areas ---------------------------------------------------------- */
+.topbar {
+  padding-top: calc(14px + env(safe-area-inset-top));
+  padding-left: calc(16px + env(safe-area-inset-left));
+  padding-right: calc(16px + env(safe-area-inset-right));
+}
+main {
+  padding-left: calc(16px + env(safe-area-inset-left));
+  padding-right: calc(16px + env(safe-area-inset-right));
+  padding-bottom: calc(40px + env(safe-area-inset-bottom));
+}
+.lock-screen {
+  padding: calc(20px + env(safe-area-inset-top)) 20px
+           calc(20px + env(safe-area-inset-bottom));
+  /* 100vh is the LARGE viewport in a WebView, so the card sits under the
+     keyboard when the password field is focused. 100dvh follows the keyboard. */
+  min-height: 100dvh;
+}
+.lic-dialog { padding-bottom: env(safe-area-inset-bottom); }
+
+/* --- touch targets ------------------------------------------------------- */
+.icon-btn, .primary, .ghost, button { min-height: 44px; }
+.icon-btn.icon-only { min-width: 44px; }
+.tabs button { min-height: 42px; }
+/* iOS zooms a focused input under 16px. Harmless on Android; kept identical
+   across the two builds on purpose. */
+input, textarea, select { font-size: 16px; }
+
+/* --- one column below 420px ---------------------------------------------- */
+@media (max-width: 420px) {
+  .grid { grid-template-columns: 1fr; }
+  .toolbar > * { flex: 1 1 100%; }
+}
+
+/* --- sensitive values ---------------------------------------------------- */
+/* Long-pressing a voucher code must not offer the system "share / web search"
+   toolbar. Copy is offered by the app's own button instead. `.field .v` is
+   where this app actually prints a code or PIN - the rest of the list was
+   written ahead of the markup and never matched anything. */
+.field .v, .card-code, .code, .sensitive, .no-select {
+  -webkit-user-select: none; user-select: none;
+  -webkit-touch-callout: none;
+}
+
+/* --- the settings sheet -------------------------------------------------- */
+.vault-block { padding: 16px 0; border-bottom: 1px solid var(--line); }
+.vault-block:last-of-type { border-bottom: 0; }
+.vault-h {
+  margin: 0 0 6px; font-size: 12px; font-weight: 800; letter-spacing: .08em;
+  text-transform: uppercase; color: var(--accent2, var(--accent));
+}
+.vault-note { margin: 0 0 12px; font-size: 13.5px; line-height: 1.6; color: var(--muted); }
+.vault-block input[type="password"] { width: 100%; }
+.vault-block .primary { width: 100%; margin-top: 4px; }
+.vault-block .fineprint { margin-top: 10px; }
+.vault-check {
+  display: flex; align-items: center; gap: 10px; margin: 10px 0 6px;
+  font-size: 13.5px; color: var(--muted); min-height: 44px;
+}
+.vault-check input { width: 20px; height: 20px; accent-color: var(--accent); }
+.vault-check input:disabled + span { opacity: .55; }
+#bio-msg { margin: 6px 0 0; font-size: 13px; line-height: 1.5; }
+/* 1.3.9: "when the app opens" sits under fingerprint unlock, indented. */
+.vault-check.vault-sub { margin: 0 0 6px 30px; }
+.vault-check.hidden { display: none; }
+
+/* Change master password (1.3.9) */
+.pw-open { width: 100%; }
+.pw-open.hidden, .pw-form.hidden, .pw-done.hidden { display: none; }
+.pw-form { display: grid; gap: 10px; }
+.pw-form .pw-field { margin: 0; }
+.pw-form .pw-strength { margin: -2px 0 0; }
+.pw-form .err { margin: 0; font-size: 13px; line-height: 1.5; }
+.pw-form .err.hidden { display: none; }
+.pw-actions { display: grid; grid-template-columns: 1fr 1.4fr; gap: 10px; }
+.pw-actions .primary { margin-top: 0; }
+.pw-form .fineprint { margin: 0; }
+.pw-done {
+  display: flex; align-items: center; gap: 8px; margin: 0 0 10px; padding: 10px 12px;
+  border-radius: 12px; background: var(--accent-soft); color: var(--accent2);
+  font-size: 13.5px; font-weight: 700; animation: pw-done-in .35s cubic-bezier(.2,.9,.3,1);
+}
+.pw-done::before { content: "¹3"; font-weight: 900; }
+@keyframes pw-done-in { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+
+/* Auto-lock choices */
+.lock-choices { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 4px 0 2px; }
+.lock-choice {
+  padding: 11px 10px; border-radius: 12px; font-size: 13.5px; font-weight: 650;
+  background: var(--surface2); color: var(--muted); border: 1px solid var(--line);
+}
+.lock-choice.is-on {
+  background: var(--accent-soft); color: var(--accent2);
+  border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent) inset;
+}
+
+/* --- master password: strength meter, confirm, fingerprint --------------- */
+.lock-card #pw, .lock-card #pw2 { margin: 0; }
+/* 1.3.9: an eye inside every password field (Card Vault's). */
+.pw-field { position: relative; margin: 0 0 10px; }
+.pw-field.hidden { display: none; }
+.pw-field input { width: 100%; padding-right: 48px; }
+/* .pw-field .pw-eye, not .pw-eye: style.css's ".lock-card button" (width
+   100%) would otherwise stretch the eye over the whole field. Centred by
+   margin, not transform - "button:active" moves buttons with a transform. */
+.pw-field .pw-eye {
+  position: absolute; right: 4px; top: 0; bottom: 0; margin: auto 0;
+  width: 40px; height: 40px; min-height: 0; display: grid; place-items: center;
+  border: 0; border-radius: 10px; background: transparent; color: var(--muted); padding: 0;
+}
+.pw-field .pw-eye:active { transform: none; }
+.pw-eye .i-eye-off { display: none; }
+.pw-eye[aria-pressed="true"] { color: var(--accent2); }
+.pw-eye[aria-pressed="true"] .i-eye { display: none; }
+.pw-eye[aria-pressed="true"] .i-eye-off { display: block; }
+/* Choosing a password: the meter keeps its place from the start, so the
+   fields never move while typing (the cursor bug in the closed test). */
+.pw-strength.is-idle .pw-meta { visibility: hidden; }
+.pw-strength { text-align: left; margin: 0 0 12px; }
+.pw-bars { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; }
+.pw-seg { height: 5px; border-radius: 3px; background: var(--line); transition: background .2s; }
+.pw-strength[data-score="0"] .pw-label { color: var(--red); }
+.pw-strength[data-score="1"] .pw-seg.is-on { background: var(--red); }
+.pw-strength[data-score="2"] .pw-seg.is-on { background: var(--amber); }
+.pw-strength[data-score="3"] .pw-seg.is-on { background: var(--accent); }
+.pw-strength[data-score="4"] .pw-seg.is-on,
+.pw-strength[data-score="5"] .pw-seg.is-on { background: var(--indigo); }
+.pw-meta { display: flex; flex-wrap: wrap; gap: 2px 8px; margin-top: 7px; font-size: 12.5px; line-height: 1.4; }
+.pw-label { font-weight: 800; color: var(--text); }
+.pw-hint { color: var(--muted); }
+.lock-card .err { margin: 0 0 10px; text-align: left; line-height: 1.45; }
+.lock-card .err:empty { min-height: 0; margin: 0; }
+.lock-card .bio-btn {
+  display: flex; align-items: center; justify-content: center; gap: 9px;
+  margin: 0 0 10px; padding: 12px 18px; border-radius: 14px;
+  background: var(--accent-soft); color: var(--accent2);
+  border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+  font-weight: 700;
+}
+.lock-card .bio-btn.hidden { display: none; }
+.lock-card .primary:disabled { opacity: .6; filter: grayscale(.3); cursor: default; }
+
+/* --- confirm-with-password dialog ---------------------------------------- */
+.modal-scrim { z-index: 95; }
+.modal-box { width: min(400px, 100%); }
+.mpw { padding: 22px 22px 20px; }
+.mpw-title { margin: 0 0 8px; font-size: 18px; font-weight: 850; letter-spacing: -.01em; }
+.mpw-body { margin: 0 0 14px; color: var(--muted); font-size: 14px; line-height: 1.55; }
+.mpw input { width: 100%; }
+.mpw-foot { display: flex; justify-content: flex-end; gap: 10px; margin-top: 16px; }
+.danger {
+  background: var(--red); color: #fff; border: none; padding: 13px 20px; border-radius: 14px;
+  box-shadow: 0 8px 20px color-mix(in srgb, var(--red) 30%, transparent);
+}
+
+/* --- search, expanding over the header ----------------------------------- */
+/* Replaces the header's contents instead of adding a row (Card Vault 1.3.1). */
+.topbar-search {
+  position: absolute; inset: 0; z-index: 2;
+  display: flex; align-items: center; gap: 8px;
+  padding: env(safe-area-inset-top) calc(12px + env(safe-area-inset-right)) 0 calc(12px + env(safe-area-inset-left));
+  background: var(--surface);
+}
+.topbar-search.hidden { display: none; }
+.topbar-search input { flex: 1; min-width: 0; padding: 11px 14px; }
+.topbar-search input::-webkit-search-cancel-button { display: none; }
+.topbar.is-searching .brand,
+.topbar.is-searching .topbar-actions { visibility: hidden; }
+
+/* --- sheets -------------------------------------------------------------- */
+.sheet-scrim .lic-body { padding-top: 14px; }
+.sheet-scrim .lic-body > .vault-h:not(:first-child) { margin-top: 18px; }
+#filter-sheet-body .filters { margin-bottom: 4px; }
+#filter-sheet-body .toolbar { margin: 0; }
+#filter-sheet-body #sort { width: 100%; min-width: 0; }
+#add-sheet-body .panel { border: 0; box-shadow: none; padding: 0; margin: 0; background: transparent; }
+#add-sheet-body .tabs { display: flex; }
+#add-sheet-body .tab { flex: 1; }
+#add-sheet-body #add-btn, #add-sheet-body #preview-btn { width: 100%; }
+#add-sheet-body .msg { display: block; margin: 8px 0 0; }
+
+/* --- the phone filter bar ------------------------------------------------ */
+.mfilter-bar { display: flex; gap: 8px; margin: 0 0 14px; overflow-x: auto; scrollbar-width: none; }
+.mfilter-bar::-webkit-scrollbar { display: none; }
+.mfilter-pill {
+  flex: none; display: inline-flex; align-items: center; gap: 7px;
+  min-height: 40px; padding: 0 12px 0 14px; border-radius: 999px;
+  background: var(--surface); border: 1px solid var(--line); color: var(--text);
+  font-size: 13.5px; font-weight: 700; box-shadow: var(--shadow-sm);
+}
+.mfilter-pill svg { color: var(--muted); flex: none; }
+.mfilter-pill.is-set { background: var(--accent-grad); color: #fff; border-color: transparent; }
+.mfilter-pill.is-set svg { color: #fff; }
+.mfp-count {
+  min-width: 22px; padding: 1px 7px; border-radius: 999px; text-align: center;
+  background: var(--surface2); color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums;
+}
+.mfilter-pill.is-set .mfp-count { background: rgba(255,255,255,.22); color: #fff; }
+.mfp-clear {
+  display: inline-grid; place-items: center; width: 22px; height: 22px; margin-right: -4px;
+  border-radius: 50%; background: rgba(255,255,255,.22); font-size: 15px; line-height: 1;
+}
+
+/* --- brand gradient ----------------------------------------------------------
+   The app's own colour: the launcher icon's ground, the header mark, the lock
+   badge and the vault-value card all use these two, so they always match. */
+:root { --brand-a: #3f97ff; --brand-b: #3a2fc9; }  /* "Ocean", chosen 03-Oct-2026 */
+
+/* --- the vault-value card ------------------------------------------------- */
+.hero { display: block; }
+.vault-value {
+  position: relative; overflow: hidden; display: flex; flex-direction: column;
+  padding: 14px 16px 12px; border-radius: 22px; color: #fff;
+  background: linear-gradient(135deg, var(--brand-a), var(--brand-b));
+  box-shadow: 0 14px 30px -16px color-mix(in srgb, var(--brand-b) 70%, transparent);
+}
+.vault-value::after { display: none; }
+.vv-orbit { display: none; }
+.vault-value > .vv-ribbon { position: absolute; top: 0; right: 0; width: 150px; height: 112px; pointer-events: none; z-index: 0; }
+.vault-value > *:not(.vv-ribbon) { position: relative; }
+.vv-label { font-size: 10.5px; letter-spacing: .16em; font-weight: 800; opacity: .88; }
+.vv-amount { font-size: 32px; font-weight: 900; line-height: 1.05; margin: 3px 0 1px; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+.vv-sub { font-size: 12.5px; font-weight: 650; opacity: .88; }
+.vault-value .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 12px; }
+.vault-value .kpi {
+  display: flex; flex-direction: column-reverse; align-items: center; justify-content: center; gap: 1px;
+  min-height: 0; padding: 7px 2px 6px; border-radius: 12px; border: 0; text-align: center;
+  background: rgba(255,255,255,.16); box-shadow: none; color: #fff; backdrop-filter: blur(2px);
+  transition: background .15s;
+}
+.vault-value .kpi:hover { transform: none; background: rgba(255,255,255,.24); box-shadow: none; }
+.vault-value .kpi-ico { display: none; }
+.vault-value .kpi-num { font-size: 18px; font-weight: 900; line-height: 1.1; color: #fff; align-self: center; }
+.vault-value .kpi.warn .kpi-num { color: #ffe08a; }
+.vault-value .kpi-label { font-size: 10.5px; font-weight: 700; color: rgba(255,255,255,.86); align-self: center; }
+.vault-value .kpi.selected { background: #fff; box-shadow: none; }
+.vault-value .kpi.selected .kpi-num { color: var(--brand-b); }
+.vault-value .kpi.selected .kpi-label { color: var(--brand-b); }
+
+/* --- the Gift Keyhole mark (header + lock badge) ------------------------- */
+/* The same 72-unit drawing as the launcher icon, on style.css's own teal
+   .brand-mark ground. Sized relative to the container so the header's
+   38px phone mark and the 66px lock badge both get the launcher's weight. */
+.gk-mark svg { width: 86%; height: auto; display: block; }
+/* The launcher icon's exact two-colour Lagoon ground, not style.css's
+   three-stop desktop gradient - the mark in the app must match the icon. */
+.gk-mark { background: linear-gradient(135deg, var(--brand-a), var(--brand-b)); }
+
+/* --- the add button (phone only; unhidden by setupMobileLayout) ---------- */
+.add-open {
+  display: inline-grid; place-items: center; padding: 0; border: none;
+  width: 44px; height: 44px; border-radius: 13px;
+  background: var(--accent-grad); color: #fff; box-shadow: 0 6px 16px rgba(47,80,220,.32);
+}
+
+/* --- phone layout -------------------------------------------------------- */
+@media (max-width: 720px) {
+  /* Header: brand mark + five 42px controls. */
+  .topbar { gap: 8px; padding-top: calc(10px + env(safe-area-inset-top)); padding-bottom: 10px; }
+  .brand-text small { display: none; }      /* "YOUR PRIVATE" is a desktop luxury */
+  .brand-text { font-size: 17px; white-space: nowrap; }
+  .brand { gap: 9px; min-width: 0; }
+  .brand > .brand-mark { width: 38px; height: 38px; border-radius: 11px; flex: none; }
+  .brand > .brand-mark .ico svg { width: 21px; height: 21px; }
+  .topbar-actions { gap: 5px; }
+  /* The Lock button loses its word and keeps its icon - it is the control the
+     user reaches for in a hurry, so it stays visible. */
+  #lock-btn { font-size: 0; gap: 0; }
+  #lock-btn .ico { font-size: 14px; }
+  .topbar .icon-btn.icon-only, #lock-btn {
+    width: 42px; min-width: 42px; height: 42px; min-height: 42px; padding: 0; justify-content: center;
+  }
+  .add-open { width: 42px; height: 42px; min-height: 42px; }
+
+  /* Sheets come up from the bottom, where the thumb is. */
+  .sheet-scrim, #lic-modal { place-items: end stretch; padding: 0; }
+  .sheet-scrim .lic-dialog, #lic-modal .lic-dialog {
+    width: 100%; max-height: 88dvh; border-radius: 22px 22px 0 0; border-bottom: 0;
+    animation: sheet-up .22s cubic-bezier(.2,.9,.3,1);
+  }
+  .sheet-scrim .lic-head, #lic-modal .lic-head { padding-top: 20px; }
+  .sheet-scrim .lic-head::before, #lic-modal .lic-head::before {
+    content: ""; position: absolute; top: 7px; left: 50%; width: 38px; height: 4px;
+    margin-left: -19px; border-radius: 2px; background: var(--line2);
+  }
+  .modal-scrim { padding: 18px; }
+
+  main { padding-top: 14px; }
+
+  /* Hero: one card, counts inside (see index.html). */
+  .hero { display: block; margin-bottom: 14px; }
+  /* The inventory title is a desktop headline; the filter bar says enough. */
+  .inv-head { display: none; }
+
+  /* Cards: details, then the actions in one tidy row. */
+  .card { padding: 14px 14px 14px 18px; gap: 10px; }
+  .card-actions { gap: 6px; }
+  .card-actions > * { min-height: 38px; }
+  .card-actions select { flex: 1; min-width: 0; }
+  .field { flex-wrap: wrap; }
+  .field .v { min-width: 0; }
+
+  .site-footer { margin-top: 28px; }
+  .footer-logo { height: 64px; }
+}
+
+/* Three filter pills (status, store, sort) must fit one row at 360-393px
+   without scrolling - a pill off the edge is a filter nobody finds. */
+@media (max-width: 440px) {
+  .mfilter-bar { gap: 6px; }
+  .mfilter-pill { padding: 0 9px 0 11px; gap: 5px; font-size: 13px; }
+  .mfilter-pill .mfp-count { min-width: 20px; padding: 1px 6px; }
+  #m-sort-pill > svg:first-child { display: none; }
+  .mfilter-pill .mfp-text { max-width: 96px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+}
+@media (max-width: 380px) {
+  .mfilter-pill .mfp-text { max-width: 66px; }
+  .mfilter-pill { padding: 0 8px 0 10px; }
+}
+
+/* Below 440px the wordmark is what gives: the icon still says which app,
+   and losing it would cost a control instead. */
+@media (max-width: 440px) {
+  .brand-text { display: none; }
+}
+
+/* ==========================================================================
+   Phone-first features (1.3.0): hidden codes, checkout view, spend sheet,
+   paste from clipboard, expiring nudge. See app.js for the why of each.
+   ========================================================================== */
+
+/* --- hidden codes -------------------------------------------------------- */
+/* (The Show button and the masked code strip are styled with the tile below.) */
+
+/* --- paste from clipboard ------------------------------------------------ */
+.paste-clip {
+  width: 100%; display: flex; align-items: center; justify-content: center; gap: 9px;
+  margin: 0 0 12px; padding: 12px; border-radius: 14px; font-weight: 700;
+  background: var(--accent-soft); color: var(--accent2);
+  border: 1px dashed color-mix(in srgb, var(--accent) 55%, transparent);
+}
+
+/* --- expiring nudge ------------------------------------------------------ */
+.nudge {
+  display: flex; align-items: stretch; margin: 0 0 14px; border-radius: 14px; overflow: hidden;
+  background: var(--amber-bg); color: var(--amber);
+  border: 1px solid color-mix(in srgb, var(--amber) 35%, transparent);
+}
+.nudge-open {
+  flex: 1; min-width: 0; display: flex; align-items: center; gap: 10px; text-align: left;
+  padding: 10px 12px; background: transparent; border: 0; border-radius: 0;
+  color: inherit; font-weight: 750; font-size: 13.5px; line-height: 1.35;
+}
+.nudge-open svg { flex: none; }
+.nudge-open #nudge-text { flex: 1; min-width: 0; color: var(--text); }
+.nudge-go { font-size: 12.5px; font-weight: 800; text-transform: uppercase; letter-spacing: .06em; }
+.nudge-x { width: 44px; flex: none; border: 0; border-radius: 0; background: transparent; color: inherit; font-size: 20px; padding: 0; }
+
+/* --- checkout view ------------------------------------------------------- */
+.use-value { display: flex; align-items: baseline; gap: 8px; margin: 2px 0 14px; }
+.use-balance { font-size: 34px; font-weight: 900; letter-spacing: -.02em; font-variant-numeric: tabular-nums; color: var(--accent2); }
+.use-face { color: var(--muted); font-size: 13.5px; font-weight: 600; }
+.use-block {
+  display: grid; gap: 8px; padding: 14px; margin-bottom: 10px; border-radius: 16px;
+  background: var(--surface3); border: 1px solid var(--line);
+}
+.use-k { font-size: 11.5px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+.use-code {
+  font: 800 clamp(20px, 6.4vw, 28px)/1.25 ui-monospace, "Cascadia Code", "Roboto Mono", monospace;
+  letter-spacing: .06em; word-break: break-all; color: var(--text);
+  -webkit-user-select: none; user-select: none;
+}
+.use-pin { font-size: clamp(20px, 6vw, 26px); }
+.use-copy { width: 100%; }
+.use-expiry { margin: 4px 0 12px; font-size: 13.5px; font-weight: 650; color: var(--muted); }
+.use-expiry.is-warn { color: var(--amber); }
+.use-expiry.is-bad { color: var(--red); }
+.use-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+.use-actions > * { flex: 1 1 140px; }
+.use-link { display: inline-flex; align-items: center; justify-content: center; text-decoration: none; font-weight: 600; }
+.use-link.hidden { display: none; }
+
+/* --- spend sheet --------------------------------------------------------- */
+.spend-label { display: block; font-weight: 750; margin-bottom: 8px; }
+.spend-input {
+  display: flex; align-items: center; gap: 6px; padding: 0 14px; border-radius: 14px;
+  background: var(--surface2); border: 1px solid var(--line);
+}
+.spend-input:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+.spend-input span { font-size: 24px; font-weight: 800; color: var(--muted); }
+.spend-input input {
+  flex: 1; min-width: 0; border: 0; background: transparent; box-shadow: none !important;
+  font-size: 28px; font-weight: 800; padding: 10px 0; font-variant-numeric: tabular-nums;
+}
+.spend-left { margin: 10px 0 4px; font-size: 13.5px; font-weight: 650; color: var(--muted); }
+.spend-left.is-warn { color: var(--red); }
+.spend-actions { display: flex; gap: 10px; margin-top: 6px; }
+.spend-actions > * { flex: 1; }
+.spend-actions .primary:disabled { opacity: .5; filter: grayscale(.4); cursor: default; }
+
+/* ==========================================================================
+   Store themes (brands.js) - every card carries its store's two-tone band,
+   the way Card Vault's tiles carry their bank's. The card's own surface stays
+   the app's, so a list of ten stores reads as ten cards, not ten posters.
+   ========================================================================== */
+.gc-glyph {
+  flex: none; display: inline-grid; place-items: center;
+  width: 34px; height: 34px; border-radius: 10px;
+  background: linear-gradient(135deg, var(--gc-a, #334155), var(--gc-b, #475569));
+  color: var(--gc-x, #fff); font: 850 14px/1 var(--font, inherit); letter-spacing: -.02em;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.18);
+}
+.gc-glyph.sm { width: 26px; height: 26px; border-radius: 8px; font-size: 11.5px; }
+
+/* --- the gift card tile: Card Vault's tile anatomy ------------------------
+   Header in the store's two-tone gradient + a generic illustration, glyph
+   chip + store name, the balance as the title, a white code strip straddling
+   header and body, label/value details, a quiet row of chip actions. Same
+   proportions as card-vault's .tile so the two apps read as one family. */
+#cards { gap: 12px; }
+.card.gtile {
+  display: block; padding: 0; overflow: hidden; position: relative;
+  border-radius: 18px; background: var(--surface); border: 1px solid var(--line);
+  box-shadow: var(--shadow-sm); transition: transform .14s, box-shadow .18s;
+}
+.card.gtile::before { display: none; }
+.card.gtile:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
+.card.gtile .card-main { cursor: pointer; }
+.gt-head {
+  position: relative; overflow: hidden; padding: 11px 12px 34px 14px;
+  color: var(--gc-fg, #fff);
+  background: linear-gradient(135deg, var(--gc-a), var(--gc-b));
+}
+.gt-head .illus { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.gt-row { position: relative; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.gt-store {
+  display: inline-flex; align-items: center; gap: 9px; min-width: 0;
+  font-size: 11.5px; font-weight: 800; letter-spacing: .6px; text-transform: uppercase;
+}
+.gt-store .card-brand { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; opacity: .95; }
+.gt-store .glyph {
+  flex: none; width: 28px; height: 28px; border-radius: 9px; display: grid; place-items: center;
+  background: rgba(255,255,255,.2); color: var(--gc-fg, #fff); font-size: 13px; font-weight: 900;
+  letter-spacing: -.02em; text-transform: none; backdrop-filter: blur(2px);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.22);
+}
+.gt-right { display: inline-flex; align-items: center; gap: 6px; flex: none; }
+.gt-pill {
+  font-size: 10px; font-weight: 800; letter-spacing: .5px; text-transform: uppercase;
+  padding: 4px 9px; border-radius: 999px; background: rgba(255,255,255,.2); color: var(--gc-fg, #fff);
+  backdrop-filter: blur(2px);
+}
+.gt-pill.expiring { background: #ffe7a8; color: #7a4d00; }
+.gt-pill.expired { background: rgba(0,0,0,.28); color: #fff; }
+.gt-pill.redeemed { background: rgba(0,0,0,.22); color: #fff; }
+.gt-menu-btn {
+  width: 34px; height: 34px; min-width: 34px; min-height: 34px; padding: 0; justify-content: center;
+  background: transparent; border: 0; color: var(--gc-fg, #fff); border-radius: 50%;
+}
+.gt-menu-btn:hover { background: rgba(255,255,255,.18); }
+.gt-title {
+  position: relative; margin: 8px 0 0; font-size: 23px; font-weight: 900; letter-spacing: -.5px;
+  line-height: 1.1; font-variant-numeric: tabular-nums; color: var(--gc-fg, #fff);
+}
+.gt-sub { position: relative; margin-top: 3px; font-size: 13px; font-weight: 650; opacity: .88; color: var(--gc-fg, #fff); }
+.gt-tags { position: relative; display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.gt-tag {
+  font-size: 11px; font-weight: 750; padding: 4px 10px; border-radius: 999px;
+  background: rgba(255,255,255,.18); color: var(--gc-fg, #fff); backdrop-filter: blur(2px);
+}
+.gt-tag.warn { background: #ffe7a8; color: #7a4d00; }
+.gt-tag.bad { background: rgba(0,0,0,.28); color: #fff; }
+
+/* the code strip, straddling header and body (Card Vault's number strip) */
+.gt-code {
+  position: relative; z-index: 2; margin: -22px 12px 0;
+  display: flex; align-items: center; gap: 10px; padding: 7px 8px 7px 12px;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 14px;
+  box-shadow: 0 4px 14px -6px rgba(15,23,42,.28);
+}
+.gt-code .num {
+  flex: 1; min-width: 0; font: 800 16.5px/1.2 ui-monospace, "Cascadia Code", "Roboto Mono", monospace;
+  letter-spacing: 1.2px; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  -webkit-user-select: none; user-select: none;
+}
+.gt-code .num.is-masked { letter-spacing: 2px; }
+.mini-copy {
+  flex: none; display: inline-grid; place-items: center; width: 32px; height: 32px; min-height: 32px;
+  padding: 0; border: 0; border-radius: 9px; background: transparent; color: var(--muted);
+}
+.mini-copy:hover { background: var(--surface2); color: var(--accent2); }
+.gt-body { display: flex; flex-wrap: wrap; gap: 4px 12px; padding: 8px 14px 2px; }
+.gt-body .detail { flex: 1 1 0; min-width: 0; }
+.gt-body .detail.wide { flex-basis: 100%; }
+.gt-body .k { font-size: 10.5px; font-weight: 800; letter-spacing: .8px; text-transform: uppercase; color: var(--muted); margin-bottom: 2px; }
+.gt-body .v { display: flex; align-items: center; gap: 4px; min-height: 28px; font-size: 14px; font-weight: 700; color: var(--text); font-variant-numeric: tabular-nums; }
+.gt-body .v.secret { letter-spacing: 2px; }
+.gt-body .v.small { font-size: 13px; font-weight: 600; color: var(--muted); min-height: 0; }
+.gt-notes { margin: 0 16px 6px; font-size: 13px; color: var(--muted); }
+.gt-foot {
+  display: flex; align-items: center; gap: 2px; padding: 2px 8px 4px;
+  border-top: 1px solid var(--line); margin-top: 4px;
+}
+.gt-foot .spacer { flex: 1; }
+.chip-btn {
+  display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 4px 10px;
+  border: 0; border-radius: 999px; background: transparent; color: var(--muted);
+  font-size: 13px; font-weight: 700; text-decoration: none;
+}
+.chip-btn .ico svg, .chip-btn > svg { width: 16px; height: 16px; }
+.chip-btn:hover { background: var(--surface2); color: var(--text); }
+.chip-btn.btn-redeem { color: var(--accent2); }
+.chip-btn.btn-del:hover { color: var(--red); background: var(--red-bg); }
+.chip-btn.reveal[aria-pressed="true"] { color: var(--accent2); background: var(--accent-soft); }
+
+/* states */
+.card.gtile.expiring { border-color: color-mix(in srgb, var(--amber) 50%, var(--line)); }
+.card.gtile.expired .gt-head { filter: saturate(.3) brightness(.92); }
+.card.gtile.redeemed { opacity: .72; }
+.card.gtile.redeemed .gt-head { filter: saturate(.2); }
+
+/* the status menu behind ⋯ */
+.gt-menu {
+  position: absolute; z-index: 60; min-width: 170px; padding: 6px;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow);
+}
+.gt-menu-h { padding: 6px 10px 4px; font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.gt-menu button {
+  display: flex; width: 100%; align-items: center; justify-content: space-between; min-height: 40px;
+  padding: 8px 10px; border: 0; border-radius: 10px; background: transparent; color: var(--text); font-weight: 650;
+}
+.gt-menu button:hover { background: var(--surface2); }
+.gt-menu button[aria-checked="true"]::after { content: "✓"; color: var(--accent2); font-weight: 900; }
+
+/* Checkout view, drawn as the store's card. */
+.use-face-card {
+  display: flex; align-items: center; gap: 14px; margin: 0 0 14px; padding: 16px;
+  border-radius: 18px; color: var(--gc-fg, #fff);
+  background: linear-gradient(120deg, var(--gc-a, var(--accent2)), var(--gc-b, var(--accent)));
+}
+.use-face-card .gc-glyph { width: 46px; height: 46px; border-radius: 13px; font-size: 18px;
+  background: rgba(255,255,255,.14); box-shadow: inset 0 0 0 1px rgba(255,255,255,.3); }
+.use-face-card .use-value { margin: 0; }
+.use-face-card .use-balance { color: var(--gc-fg, #fff); }
+.use-face-card .use-face { color: var(--gc-fg, #fff); opacity: .8; }
+
+/* --- stores in the filter sheet ------------------------------------------ */
+.store-chips { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 4px; }
+.store-chip {
+  display: flex; align-items: center; gap: 9px; min-width: 0; text-align: left;
+  padding: 8px 10px; border-radius: 13px; background: var(--surface2);
+  border: 1px solid var(--line); color: var(--text); font-weight: 700; font-size: 13.5px;
+}
+.store-chip.is-on { border-color: var(--gc-b, var(--accent)); box-shadow: 0 0 0 1.5px var(--gc-b, var(--accent)) inset; background: var(--surface); }
+.store-chip .sc-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.store-chip .sc-val { flex: none; color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; }
+.mfilter-pill.is-store { background: linear-gradient(120deg, var(--gc-a), var(--gc-b)); color: var(--gc-fg); }
+
+/* --- store picker (type-ahead) ------------------------------------------ */
+.sp-wrap { position: relative; margin-bottom: 12px; }
+.sp-wrap #paste-brand { margin-bottom: 0; }
+.grid label, .scan-fields label { position: relative; }
+.sp-suggest {
+  position: absolute; left: 0; right: 0; top: calc(100% + 4px); z-index: 30;
+  display: grid; padding: 6px; border-radius: 14px; text-transform: none; letter-spacing: 0;
+  background: var(--surface); border: 1px solid var(--line); box-shadow: var(--shadow);
+}
+.grid label > .sp-suggest, .scan-fields label > .sp-suggest { top: auto; margin-top: 0; position: relative; }
+.sp-suggest.hidden { display: none; }
+.sp-item {
+  display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 6px 8px;
+  border: 0; border-radius: 10px; background: transparent; color: var(--text);
+  font-size: 14.5px; font-weight: 650; text-align: left;
+}
+.sp-item:hover, .sp-item.is-active { background: var(--surface2); }
+.sp-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sp-tag { flex: none; font-size: 10.5px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; color: var(--accent2); background: var(--accent-soft); padding: 2px 8px; border-radius: 999px; }
+.sp-item.is-add { color: var(--accent2); border-top: 1px dashed var(--line); border-radius: 0 0 10px 10px; margin-top: 2px; }
+.sp-add-ico { flex: none; width: 26px; height: 26px; border-radius: 8px; display: grid; place-items: center; background: var(--accent-soft); color: var(--accent2); font-weight: 900; font-size: 17px; }
+
+/* --- autocorrect note ---------------------------------------------------- */
+.fix-note { display: block; margin-top: 4px; font-size: 12px; font-weight: 600; color: var(--accent2); letter-spacing: 0; text-transform: none; }
+.fix-note.hidden { display: none; }
+.linkish { background: none; border: 0; padding: 0 2px; min-height: 0; color: var(--accent2); font-weight: 800; text-decoration: underline; font-size: 12px; }
+/* Grid items default to min-width:auto, so an input's intrinsic width pushed
+   the right-hand column past the row's edge on a 393px phone. */
+.preview-row > * { min-width: 0; }
+.preview-row input { width: 100%; box-sizing: border-box; }
+.preview-row input.fixed { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft); }
+
+/* --- scan ------------------------------------------------------------------ */
+/* Live viewfinder. 4:3, the video cropped to fill it (object-fit: cover) -
+   scan.js reads exactly this visible area, so what you aim at is what is read. */
+.cam-intro { display: grid; gap: 12px; justify-items: center; text-align: center; padding: 6px 0 2px; }
+.cam-intro-art {
+  width: 64px; height: 64px; border-radius: 20px; display: grid; place-items: center;
+  background: var(--accent-soft); color: var(--accent2);
+}
+.cam-intro-art svg { width: 30px; height: 30px; }
+.cam-intro-text { margin: 0; max-width: 34ch; line-height: 1.55; font-size: 14.5px; }
+.cam-start { width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; min-height: 54px; font-size: 15.5px; }
+/* "From a screenshot": second choice under Start, same width so the two read
+   as a pair. The status line under it says "Reading..." while the picture is
+   read, and why nothing was found when that happens. */
+.cam-shot { width: 100%; display: flex; align-items: center; justify-content: center; gap: 9px; min-height: 48px; font-size: 15px; }
+.cam-shot:disabled { opacity: .6; cursor: default; }
+.shot-status { margin: -4px 0 0; min-height: 0; font-size: 13.5px; line-height: 1.45; color: var(--muted); }
+.shot-status:empty { display: none; }
+.shot-status.is-err { color: var(--amber); }
+.cam-live { display: grid; gap: 12px; }
+.cam-view {
+  position: relative; width: 100%; aspect-ratio: 4 / 3; overflow: hidden;
+  border-radius: 18px; background: #0b0f14;
+}
+.cam-view video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.cam-frame { position: absolute; inset: 9% 7%; pointer-events: none; }
+.cam-frame i { position: absolute; width: 26px; height: 26px; border: 3.5px solid #fff; filter: drop-shadow(0 1px 2px rgba(0,0,0,.5)); }
+.cam-frame i:nth-child(1) { top: 0; left: 0; border-right: 0; border-bottom: 0; border-top-left-radius: 12px; }
+.cam-frame i:nth-child(2) { top: 0; right: 0; border-left: 0; border-bottom: 0; border-top-right-radius: 12px; }
+.cam-frame i:nth-child(3) { bottom: 0; left: 0; border-right: 0; border-top: 0; border-bottom-left-radius: 12px; }
+.cam-frame i:nth-child(4) { bottom: 0; right: 0; border-left: 0; border-top: 0; border-bottom-right-radius: 12px; }
+.cam-scanline {
+  position: absolute; left: 9%; right: 9%; top: 12%; height: 2px; border-radius: 1px;
+  background: linear-gradient(90deg, transparent, #4fd1ff, transparent);
+  box-shadow: 0 0 12px #4fd1ff; animation: cam-sweep 2.2s ease-in-out infinite alternate;
+}
+@keyframes cam-sweep { to { top: 86%; } }
+@media (prefers-reduced-motion: reduce) { .cam-scanline { animation: none; top: 50%; } }
+.cam-torch {
+  position: absolute; top: 10px; right: 10px; width: 42px; height: 42px; min-height: 42px; padding: 0;
+  display: grid; place-items: center; border-radius: 50%; border: 0;
+  background: rgba(0,0,0,.45); color: #fff; backdrop-filter: blur(6px);
+}
+.cam-torch[aria-pressed="true"] { background: #ffd54a; color: #1a1a1a; }
+.cam-torch.hidden { display: none; }
+.cam-tip {
+  position: absolute; left: 50%; bottom: 10px; transform: translateX(-50%); max-width: 90%;
+  padding: 6px 12px; border-radius: 999px; background: rgba(0,0,0,.55); color: #fff;
+  font-size: 12.5px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  backdrop-filter: blur(6px);
+}
+.live-fields { display: grid; gap: 6px; }
+.lf {
+  display: flex; align-items: center; gap: 10px; min-height: 40px; padding: 6px 12px;
+  border-radius: 12px; background: var(--surface3); border: 1px solid var(--line);
+  transition: border-color .2s, background .2s;
+}
+.lf-k { width: 70px; flex: none; font-size: 12px; font-weight: 750; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
+.lf-v { flex: 1; min-width: 0; font-weight: 750; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lf-v.mono { font-family: ui-monospace, "Cascadia Code", "Roboto Mono", monospace; letter-spacing: .04em; }
+.lf.is-reading .lf-v { color: var(--text); opacity: .6; }
+.lf.is-locked { border-color: color-mix(in srgb, var(--accent) 55%, var(--line)); background: var(--accent-soft); }
+.lf.is-locked .lf-v { color: var(--text); }
+.lf.is-locked::after {
+  content: ""; flex: none; width: 18px; height: 18px; border-radius: 50%;
+  background: var(--accent) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23fff' d='m9.5 16.2-3.7-3.7L4.4 14l5.1 5.1L20 8.6l-1.4-1.4z'/%3E%3C/svg%3E") center / 14px no-repeat;
+}
+.cam-actions { display: flex; gap: 10px; }
+.cam-actions .primary { flex: 2; }
+.cam-actions .ghost { flex: 1; }
+.cam-actions .primary:disabled { opacity: .5; filter: grayscale(.4); cursor: default; }
+.cam-error { display: grid; gap: 12px; padding: 4px 0; }
+.cam-error p { margin: 0; line-height: 1.55; color: var(--text); }
+.scan-thumb { width: 100%; max-height: 180px; object-fit: contain; border-radius: 12px; background: var(--surface3); border: 1px solid var(--line); }
+.scan-thumb.sm { width: 72px; height: 54px; max-height: none; object-fit: cover; flex: none; }
+.scan-thumb:not([src]) { display: none; }
+.scan-head { display: flex; gap: 12px; align-items: center; margin-bottom: 12px; }
+.scan-head p { margin: 2px 0 0; font-size: 13px; }
+.seg { display: flex; gap: 4px; padding: 4px; border-radius: 13px; background: var(--surface2); border: 1px solid var(--line); margin-bottom: 12px; }
+.seg button { flex: 1; min-height: 40px; border: 0; background: transparent; color: var(--muted); font-weight: 750; border-radius: 10px; }
+.seg button[aria-checked="true"] { background: var(--surface); color: var(--accent2); box-shadow: var(--shadow-sm); }
+.scan-fields { display: grid; gap: 10px; }
+.scan-fields label { display: grid; gap: 5px; font-size: 12.5px; font-weight: 700; color: var(--muted); }
+.scan-fields label.hidden { display: none; }
+.scan-fields input { width: 100%; color: var(--text); font-weight: 600; }
+.flag { justify-self: start; font-size: 10.5px; font-weight: 850; letter-spacing: .06em; text-transform: uppercase; border-radius: 999px; }
+.flag.is-guess { padding: 2px 8px; background: var(--amber-bg); color: var(--amber); }
+.flag.is-missing { padding: 2px 8px; background: var(--red-bg); color: var(--red); }
+.scan-review .preview-actions > * { flex: 1; }
+.scan-raw { margin-top: 12px; font-size: 12.5px; color: var(--muted); }
+.scan-raw pre { white-space: pre-wrap; word-break: break-word; max-height: 160px; overflow: auto; background: var(--surface3); border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; font-size: 12px; }
+
+@keyframes sheet-up { from { transform: translateY(24px); opacity: .4; } to { transform: none; opacity: 1; } }
+@media (prefers-reduced-motion: reduce) {
+  .sheet-scrim .lic-dialog, #lic-modal .lic-dialog { animation: none; }
+}
+
+/* ==========================================================================
+   Welcome / unlock: "Gift box"
+   ========================================================================== */
+.lock-screen.gift-lock {
+  position: relative; overflow: hidden; display: flex; flex-direction: column;
+  align-items: stretch; justify-content: flex-end; padding: 0; min-height: 100dvh;
+  background: linear-gradient(160deg, var(--brand-a), var(--brand-b));
+}
+.lock-screen.gift-lock.hidden { display: none; }
+.gift-lock .lk-art { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.gift-lock .lk-hero {
+  position: relative; flex: 1; min-height: 0; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 2px; color: #fff; text-align: center;
+  padding: calc(24px + env(safe-area-inset-top)) 20px 18px;
+}
+.gift-lock .lk-mark svg {
+  display: block; width: clamp(76px, 15dvh, 128px); height: auto;
+  filter: drop-shadow(0 12px 16px rgba(10, 10, 60, .35));
+}
+.gift-lock .lk-name { margin: 2px 0 0; font-size: clamp(24px, 4dvh, 30px); font-weight: 900; letter-spacing: -.02em; color: #fff; }
+.gift-lock .lk-tag { margin: 2px 0 0; font-size: 13px; font-weight: 650; color: rgba(255,255,255,.85); }
+
+/* the sheet: overrides style.css's floating, centred .lock-card */
+.gift-lock .lock-card.lk-sheet {
+  position: relative; width: 100%; max-width: 520px; margin: 0 auto; text-align: left;
+  padding: 18px 20px calc(16px + env(safe-area-inset-bottom));
+  border: 0; border-radius: 26px 26px 0 0; background: var(--surface);
+  box-shadow: 0 -14px 36px -14px rgba(10, 10, 60, .45);
+  animation: sheet-up .3s cubic-bezier(.2,.9,.3,1);
+}
+.gift-lock .lk-handle { width: 38px; height: 4px; border-radius: 2px; background: var(--line2); margin: -6px auto 12px; }
+.gift-lock .lk-title { margin: 0; font-size: 19px; font-weight: 850; letter-spacing: -.01em; color: var(--text); }
+.gift-lock .lk-sub { margin: 4px 0 14px; font-size: 13.5px; line-height: 1.5; color: var(--muted); }
+.gift-lock #unlock-form { display: grid; gap: 10px; }
+.gift-lock .lock-card input { margin: 0; }
+.gift-lock .lock-card #pw, .gift-lock .lock-card #pw2 { margin: 0; }
+.gift-lock .pw-strength { margin: -2px 0 0; }
+.gift-lock .pw-field { margin: 0; }
+/* The sheet is anchored to the bottom, so anything that grows inside it
+   pushes the focused field up. Two lines are kept for the hint while a
+   password is being chosen, whatever it says. */
+.gift-lock .pw-strength .pw-meta { min-height: 35px; align-content: flex-start; }
+.gift-lock .lock-card .err { margin: 0; }
+.gift-lock .lock-card .bio-btn { margin: 0; }
+.gift-lock .lk-fine { margin: 12px 0 0; text-align: center; }
+@media (prefers-reduced-motion: reduce) { .gift-lock .lock-card.lk-sheet { animation: none; } }
+
+/* --------------------------------------------------------------------------
+   Subscription (billing.js). A pill in the Vault Value card - stopwatch +
+   FREE TRIAL, or crown + PREMIUM - and a "Your plan" row at the top of
+   Settings. The price is never shown in the app: Google's sheet does that.
+   (Not an hourglass: that is already the Expired KPI's icon in this card.)
+   -------------------------------------------------------------------------- */
+.plan-pill {
+  align-self: flex-start; display: inline-flex; align-items: center; gap: 5px;
+  margin: 6px 0 2px; padding: 3px 10px 3px 8px; min-height: 0;
+  border-radius: 999px; border: 1px solid rgba(255,255,255,.35);
+  background: rgba(255,255,255,.2); color: #fff;
+  font-size: 10px; font-weight: 800; letter-spacing: .12em; position: relative; z-index: 1;
+}
+.plan-pill svg { width: 12px; height: 12px; flex: none; }
+.plan-pill.is-premium svg { color: #ffc94a; }
+.plan-row { display: flex; align-items: center; gap: 12px; }
+.plan-ico {
+  flex: none; width: 38px; height: 38px; border-radius: 12px; display: grid; place-items: center;
+  background: var(--accent-soft); color: var(--accent2);
+}
+.plan-ico svg { width: 20px; height: 20px; }
+.plan-ico.is-premium { background: linear-gradient(140deg, #ffc94a, #ff8a1f); color: #fff; }
+.plan-text { flex: 1; min-width: 0; display: grid; }
+.plan-text .vault-note { margin: 2px 0 0; }
+.gift-lock .sub-gate { display: grid; gap: 10px; }
+.gift-lock .sub-gate .err:empty { display: none; }
+.sub-gate .link-btn {
+  background: none; border: 0; padding: 6px; font: inherit; font-size: 13.5px;
+  font-weight: 650; color: var(--accent2); cursor: pointer;
+}
+
+/* ==========================================================================
+   1.3.9 - closed-test round: edit, archive, multi-card list, fit to screen
+   ========================================================================== */
+
+/* Edit: the Form tab alone, with Save changes + Cancel. */
+#add-panel.is-editing .tabs { display: none; }
+#add-panel.is-editing #tab-manual { display: block; }
+.edit-actions { display: flex; gap: 10px; }
+.edit-actions > * { flex: 1; }
+.edit-actions .hidden { display: none; }
+#f-balance-wrap.hidden { display: none; }
+#add-sheet-body .edit-actions #add-btn { width: auto; }
+
+/* A card that just changed glows once (instead of a pop-up). */
+.card.gtile.is-flash { animation: gt-flash 1.1s ease-out; }
+@keyframes gt-flash {
+  0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 55%, transparent); }
+  35% { box-shadow: 0 0 0 6px color-mix(in srgb, var(--accent) 35%, transparent); }
+  100% { box-shadow: 0 0 0 0 transparent; }
+}
+/* Archived / unarchived: the tile slides out of the list. */
+.card.gtile.is-leaving { transition: opacity .2s ease, transform .2s ease; opacity: 0; transform: translateX(28px) scale(.98); }
+@media (prefers-reduced-motion: reduce) {
+  .card.gtile.is-flash { animation: none; }
+  .card.gtile.is-leaving { transition: none; }
+}
+
+/* Archived cards, in the Archived view: quiet, like redeemed ones. */
+.card.gtile.is-archived { opacity: .8; }
+.card.gtile.is-archived .gt-head { filter: saturate(.25) brightness(.95); }
+.gt-pill.archived { background: rgba(0,0,0,.28); color: #fff; }
+.chip-btn.btn-archive:hover { color: var(--accent2); background: var(--accent-soft); }
+
+/* The ⋯ menu: Edit and Archive as actions, the statuses as before. */
+.gt-menu .gt-menu-act { justify-content: flex-start; gap: 10px; }
+.gt-menu .gt-menu-act .ico svg { width: 18px; height: 18px; }
+.gt-menu-sep { height: 1px; background: var(--line); margin: 4px 6px; }
+
+/* Footer chips never wrap - they shrink to icons instead (fit below). */
+.gt-foot .chip-btn { white-space: nowrap; flex-shrink: 0; }
+
+/* --- fit to the screen (measured in app.js fitToScreen) ------------------ */
+html.fit-narrow .gt-foot { gap: 0; padding-left: 4px; padding-right: 4px; }
+html.fit-narrow .chip-btn { padding: 4px 8px; gap: 4px; }
+html.fit-narrow .chip-btn.btn-archive > span:last-child,
+html.fit-narrow .chip-btn.btn-del > span:last-child { display: none; }
+html.fit-narrow .tabs .tab { font-size: 12.5px; padding-left: 7px; padding-right: 7px; }
+html.fit-narrow .mfilter-pill { padding: 6px 10px; }
+html.fit-narrow .vault-value .kpi-label { font-size: 9.5px; }
+html.fit-tiny .chip-btn > span:last-child { display: none; }
+html.fit-tiny .chip-btn.btn-redeem > span:last-child { display: inline; }
+html.fit-tiny .chip-btn { padding: 4px 7px; }
+html.fit-tiny .mfilter-bar { gap: 4px; }
+html.fit-tiny .mfilter-pill { padding: 6px 8px; gap: 4px; font-size: 13px; }
+html.fit-tiny .tabs .tab { font-size: 12px; padding-left: 5px; padding-right: 5px; }
+
+/* Multi-card list (1.3.9): add more from here; new rows arrive visibly. */
+.batch-more { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 4px 0 10px; }
+.batch-more .ghost {
+  display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+  padding: 11px 10px; font-size: 13.5px; font-weight: 700; color: var(--accent2);
+  border-style: dashed; border-color: color-mix(in srgb, var(--accent) 45%, var(--line));
+}
+.batch-more .ghost:disabled { opacity: .55; }
+.preview-row.is-new { animation: row-in .45s cubic-bezier(.2,.9,.3,1); }
+@keyframes row-in {
+  from { opacity: 0; transform: translateY(8px); box-shadow: 0 0 0 3px var(--accent-soft); }
+  to { opacity: 1; transform: none; box-shadow: 0 0 0 0 transparent; }
+}
+.preview-row input[type="date"] { min-height: 38px; }
+.scan-to-list { display: block; margin: 12px auto 0; font-size: 13.5px; }
+@media (prefers-reduced-motion: reduce) { .preview-row.is-new { animation: none; } }
+
+/* Terms & conditions (1.3.9) */
+#terms-sheet { z-index: 90; }
+.terms-date { margin: 0 0 8px; font-size: 12px; font-weight: 600; color: var(--muted); }
+.terms-list { margin: 0 0 16px; padding-left: 22px; display: grid; gap: 12px; }
+.terms-list li { font-size: 13.5px; line-height: 1.6; color: var(--muted); padding-left: 2px; }
+.terms-list li::marker { color: var(--accent2); font-weight: 700; }
+.terms-list b { color: var(--text); font-weight: 700; }
+.lic-body.terms #terms-done { width: 100%; margin-top: 4px; }
+.lock-terms { margin: 0; font-size: 12.5px; line-height: 1.5; text-align: center; color: var(--muted); }
+.lock-terms .linkish { font-size: 12.5px; }
+
+/* ==========================================================================
+   1.3.10 - feedback #2, Card Vault 1.3.9's security/polish round, and the
+   critique items picked for Gift Card Vault (D1 glows, D2 blur, D11 lift).
+   Overrides only.
+   ========================================================================== */
+
+/* --- D1: no glows (logo, Add button, lock-screen mark and sheet) ---------- */
+.brand-mark, .brand:hover .brand-mark, .add-open { box-shadow: none; }
+.gift-lock .lk-mark svg { filter: none; }
+.gift-lock .lock-card.lk-sheet { box-shadow: 0 -1px 0 var(--line); }
+
+/* --- D2: no frosted blur - solid backgrounds ------------------------------ */
+.topbar { backdrop-filter: none; background: var(--surface); }
+.vault-value .kpi, .gt-store .glyph, .gt-pill, .gt-tag, .cam-torch, .cam-tip { backdrop-filter: none; }
+
+/* --- D11: no hover-lift on phones (it sticks after a tap) ------------------ */
+@media (hover: none) {
+  .kpi:hover, .card:hover, .card.gtile:hover { transform: none; box-shadow: none; }
+  .brand:hover .brand-mark { transform: none; filter: none; }
+}
+
+/* --- gift box in the corner: the lid hops when the app opens / on tap ------ */
+.gk-mark.is-playing svg { animation: gk-hop .9s cubic-bezier(.3,1.4,.5,1) 1; transform-origin: 50% 85%; }
+@keyframes gk-hop {
+  0% { transform: none; } 22% { transform: translateY(-3px) rotate(-8deg); }
+  44% { transform: translateY(0) rotate(6deg); } 66% { transform: rotate(-3deg); } 100% { transform: none; }
+}
+.brand { cursor: pointer; }
+@media (prefers-reduced-motion: reduce) { .gk-mark.is-playing svg { animation: none; } }
+
+/* --- header: bell with a small count, archive toggle ----------------------- */
+.bell-btn { position: relative; }
+.bell-badge {
+  position: absolute; top: 3px; right: 2px; min-width: 17px; height: 17px; padding: 0 4px;
+  border-radius: 9px; background: #e5484d; color: #fff; font-size: 11px; font-weight: 700;
+  line-height: 17px; text-align: center; pointer-events: none;
+}
+#archive-btn[aria-pressed="true"] { background: color-mix(in srgb, var(--accent) 16%, transparent); color: var(--accent); }
+.is-archive-view .vault-value .kpi.selected { outline: 0; }
+
+/* --- bell sheet: Mini Statement's saved tray - one line per alert ---------- */
+.bell-tray .lic-head { gap: 8px; }
+.bell-meta { display: inline-flex; align-items: center; gap: 4px; margin-left: auto; }
+.bell-count { font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; margin-right: 4px; }
+.bell-edit { height: 32px; padding: 0 12px; border: 0; border-radius: 16px; background: none; color: var(--text); font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; }
+.bell-list { list-style: none; margin: 0; padding: 0; }
+.bell-open {
+  display: grid; grid-template-columns: 54px minmax(0, 1fr) auto; gap: 10px; align-items: center;
+  min-height: 44px; padding: 8px 0; cursor: pointer;
+  border-bottom: 1px dashed color-mix(in srgb, var(--text) 18%, transparent);
+}
+.bell-list li:last-child .bell-open { border-bottom: 0; }
+.bell-open .bd { font: 600 12px/1 ui-monospace, Menlo, Consolas, monospace; letter-spacing: .04em; color: var(--muted); }
+.bell-open .bt { font-size: 14.5px; line-height: 1.35; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bell-x { display: none; width: 32px; height: 32px; border: 0; border-radius: 50%; place-items: center; background: none; color: var(--muted); font-size: 20px; cursor: pointer; }
+.bell-tray.editing .bell-x, #bell-sheet.editing .bell-x { display: grid; }
+#bell-sheet.editing .bell-open { cursor: default; }
+.bell-none { padding: 6px 0 14px; color: var(--muted); font-size: 14px; line-height: 1.5; }
+.bell-full { margin: 10px 0 0; color: var(--muted); font-size: 13px; }
+.bell-end { margin: 6px 0 2px; text-align: center; font: 600 11px/1 ui-monospace, Menlo, Consolas, monospace; letter-spacing: .14em; color: var(--muted); }
+
+/* --- filters: each pill opens only its own section ------------------------- */
+#filter-sheet[data-section] .fs-sec { display: none; }
+#filter-sheet[data-section="status"] .fs-sec[data-sec="status"],
+#filter-sheet[data-section="store"] .fs-sec[data-sec="store"],
+#filter-sheet[data-section="sort"] .fs-sec[data-sec="sort"] { display: block; }
+#filter-sheet .fs-sec > .vault-h { display: none; }      /* the sheet title says it */
+#filter-sheet .store-chips { max-height: 60dvh; overflow-y: auto; }
+
+/* --- Combine by brand toggle, in the value card ---------------------------- */
+.combine-toggle {
+  display: inline-flex; align-items: center; gap: 9px; margin-top: 10px; cursor: pointer;
+  color: #fff; font-size: 13.5px; font-weight: 650; user-select: none; -webkit-user-select: none;
+}
+.combine-toggle input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.ct-track {
+  position: relative; width: 38px; height: 22px; border-radius: 11px; flex: none;
+  background: rgba(255,255,255,.28); transition: background .18s;
+}
+.ct-knob {
+  position: absolute; top: 3px; left: 3px; width: 16px; height: 16px; border-radius: 50%;
+  background: #fff; transition: transform .18s;
+}
+.combine-toggle input:checked + .ct-track { background: #ff7a2f; }
+.combine-toggle input:checked + .ct-track .ct-knob { transform: translateX(16px); }
+.combine-toggle input:focus-visible + .ct-track { outline: 2px solid #fff; outline-offset: 2px; }
+.combine-toggle.is-disabled { opacity: .45; pointer-events: none; }
+
+/* --- combined brand tile: the header only, no code strip -------------------- */
+.brand-tile { cursor: pointer; }
+
+/* --- copy confirmation on the tapped control (no pop-up) ------------------- */
+.gt-code .num { cursor: pointer; }
+.mini-copy.is-copied, #use-copy-code.is-copied, #use-copy-pin.is-copied, #ex-copy.is-copied {
+  color: #1f8a4c; background: color-mix(in srgb, #2e9e64 14%, transparent);
+}
+.gt-code .num.is-copied { color: #1f8a4c; letter-spacing: 0; font-size: 14px; }
+[data-theme="dark"] .mini-copy.is-copied, [data-theme="dark"] .gt-code .num.is-copied { color: #7fd6a4; }
+.chip-btn .rv-left { font-variant-numeric: tabular-nums; opacity: .7; font-weight: 500; margin-left: 2px; }
+
+/* --- export one gift card ---------------------------------------------------- */
+.export-text {
+  margin: 0 0 10px; padding: 12px 14px; border-radius: 12px; background: var(--surface2, rgba(0,0,0,.05));
+  font: 600 14px/1.6 ui-monospace, Menlo, Consolas, monospace; white-space: pre-wrap; word-break: break-word;
+  -webkit-user-select: none; user-select: none;
+}
+.modal-foot { display: flex; justify-content: flex-end; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+
+/* --- phone header: Card Vault's capsule (1.3.10 feedback) ------------------
+   The icon actions sit in one soft tinted capsule - no borders, no boxes -
+   and the + stands beside it, exactly as in Card Vault; Card Vault's icons. */
+.i-moon { display: none; }
+body[data-theme="dark"] .i-sun { display: none; }
+body[data-theme="dark"] .i-moon { display: block; }
+@media (min-width: 721px) { .act-group { display: contents; } }
+@media (max-width: 720px) {
+  .topbar .brand-text { display: none; }
+  .topbar-actions { flex: none; gap: 6px; margin-left: auto; }
+  .act-group {
+    display: flex; align-items: center; gap: 1px; padding: 2px;
+    border-radius: 999px; background: color-mix(in srgb, var(--accent) 10%, transparent);
+  }
+  body[data-theme="dark"] .act-group { background: color-mix(in srgb, var(--accent) 18%, transparent); }
+  .act-group .icon-btn, .act-group .icon-btn.icon-only, .act-group #lock-btn {
+    width: 40px; min-width: 40px; height: 40px; min-height: 40px; padding: 0;
+    border: 0; border-radius: 50%; background: transparent; box-shadow: none; color: var(--text);
+  }
+  .act-group #archive-btn[aria-pressed="true"] { background: color-mix(in srgb, var(--accent) 18%, transparent); color: var(--accent); }
+  .add-open { width: 40px; min-width: 40px; height: 40px; min-height: 40px; border-radius: 50%; }
+}
+@media (max-width: 380px) {
+  .act-group .icon-btn, .act-group .icon-btn.icon-only, .act-group #lock-btn { width: 36px; min-width: 36px; height: 36px; min-height: 36px; }
+  .add-open { width: 36px; min-width: 36px; height: 36px; min-height: 36px; }
+}
+.bell-badge { top: 1px; right: 0; }
+
+/* --- Settings: "Changing phones?" steps (1.3.10, from Card Vault) --------- */
+.move-steps { margin: 6px 0 2px; padding-left: 22px; display: grid; gap: 7px; font-size: 14px; line-height: 1.45; }
+.move-steps li::marker { color: var(--accent); font-weight: 700; }
+
+/* --- Stores picker: the GiftDeals site's brand picker (1.3.10) ------------- */
+.st-picker { display: flex; flex-direction: column; min-height: 0; }
+#filter-sheet[data-section="store"] .lic-body { display: flex; flex-direction: column; }
+.st-head { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
+.st-find {
+  flex: 1; min-width: 0; display: flex; align-items: center; gap: 7px; padding: 0 10px; height: 40px;
+  border: 1px solid var(--line); border-radius: 11px; background: var(--surface2); color: var(--muted);
+}
+.st-find:focus-within { border-color: var(--accent); }
+.st-find input { flex: 1; min-width: 0; border: 0; outline: 0; background: transparent; color: var(--text); font: 600 15px inherit; font-size: 15px; }
+.st-order { margin: 0; flex: none; }
+.st-order button { min-height: 32px; padding: 0 10px; font-size: 12.5px; }
+.st-order button.is-on { background: var(--surface); color: var(--accent2); box-shadow: var(--shadow-sm); }
+.st-body { position: relative; display: flex; min-height: 0; height: min(56dvh, 520px); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
+.st-list { flex: 1; overflow-y: auto; overscroll-behavior: contain; padding: 2px 4px 8px 6px; max-height: none !important; }
+.st-group h4 {
+  position: sticky; top: 0; z-index: 1; display: flex; align-items: center; justify-content: space-between; margin: 0; padding: 8px 8px 4px;
+  font-size: 12px; font-weight: 800; letter-spacing: .12em; color: var(--accent2); background: var(--surface);
+}
+.st-group h4 span { font-size: 12px; font-weight: 650; letter-spacing: 0; color: var(--muted); }
+.st-row {
+  width: 100%; display: flex; align-items: center; gap: 9px; min-height: 44px; padding: 6px 8px; border: 0; border-radius: 10px;
+  background: transparent; color: var(--text); font: inherit; font-size: 14px; font-weight: 650; text-align: left;
+}
+.st-row.is-on { background: color-mix(in srgb, var(--accent) 12%, transparent); }
+.st-tick { flex: none; width: 18px; height: 18px; border-radius: 5px; border: 1.6px solid var(--line2); position: relative; }
+.st-row.is-on .st-tick { background: var(--accent); border-color: var(--accent); }
+.st-row.is-on .st-tick::after {
+  content: ""; position: absolute; left: 5px; top: 1.5px; width: 4px; height: 8px; border: solid #fff; border-width: 0 2px 2px 0; transform: rotate(45deg);
+}
+.st-nm { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.st-n { flex: none; font-size: 12px; font-weight: 600; color: var(--muted); }
+.st-val { flex: none; min-width: 64px; text-align: right; font-size: 13px; font-weight: 800; color: var(--green); font-variant-numeric: tabular-nums; }
+.st-val.none { color: var(--muted); font-weight: 600; }
+.st-empty { padding: 24px 10px; text-align: center; color: var(--muted); font-size: 14px; }
+.st-rail { flex: none; display: flex; flex-direction: column; justify-content: space-between; padding: 4px 3px; border-left: 1px solid var(--line); }
+.st-rail button {
+  border: 0; background: transparent; padding: 0 5px; min-height: 0; flex: 1; border-radius: 5px;
+  font-size: 11px; font-weight: 800; color: var(--accent2); line-height: 1;
+}
+.st-rail button:disabled { color: var(--line2); }
+.st-foot { display: flex; align-items: center; gap: 8px; margin-top: 10px; }
+.st-count { flex: 1; color: var(--muted); font-size: 13px; font-weight: 650; }
+
+/* --- 1.3.10 feedback: the expiry lives in the tile's pill, in its colours -- */
+/* a darker tint so a pill reads cleanly over the ribbon and bow behind it */
+.gt-pill.expiring { background: rgba(0,0,0,.34); color: #fff; }
+.gt-pill.expired { background: rgba(0,0,0,.4); color: #fff; }
+
+/* --- 1.3.10 round 3: the combined store tile is a ribbon band -------------- */
+/* left: the store's colours with the ribbon running across to a bow;
+   right: a soft wash of the brand colour carrying the total and card count */
+.card.gtile.brand-tile { display: flex; gap: 0; min-height: 72px; }
+.bt-left {
+  position: relative; overflow: hidden; flex: 0 0 50%; padding: 12px 10px 12px 12px;
+  color: var(--gc-fg, #fff); background: linear-gradient(135deg, var(--gc-a), var(--gc-b));
+}
+.bt-left .illus { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.bt-left .gt-store { position: relative; max-width: 100%; gap: 7px; }
+/* long names (MakeMyTrip, Reliance Digital) take two lines, never "..." */
+.bt-left .gt-store .card-brand {
+  white-space: normal; font-size: 11px; letter-spacing: .2px; line-height: 1.15;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+}
+.bt-right {
+  flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: flex-end; justify-content: center;
+  gap: 4px; padding: 10px 14px; background: color-mix(in srgb, var(--gc-a) 8%, var(--surface));
+}
+.brand-tile .gt-title {
+  margin: 0; font-size: 21px; color: color-mix(in srgb, var(--gc-b) 78%, var(--text));
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;
+}
+.bt-meta { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; color: var(--muted); }
+.bt-stack { display: inline-flex; }
+.bt-stack i {
+  width: 12px; height: 9px; border-radius: 2.5px; background: var(--gc-a);
+  border: 1px solid var(--surface); margin-left: -6px;
+}
+.bt-stack i:first-child { margin-left: 0; }
+.bt-stack i:nth-child(2) { opacity: .85; } .bt-stack i:nth-child(3) { opacity: .7; }
+.bt-stack i:nth-child(4) { opacity: .55; } .bt-stack i:nth-child(5) { opacity: .4; }
+
+/* ==========================================================================
+   1.3.11 - Lifetime + export lock, scanner rebuild, bringing vouchers in,
+   list and header (issue #2), checkout mode, trial countdown. Overrides only.
+   ========================================================================== */
+
+/* --- plans: Yearly / Lifetime, side by side (C1-C2) ----------------------- */
+.plan-options { display: grid; gap: 10px; }
+.plan-opt {
+  display: grid; gap: 6px; padding: 14px; border-radius: 16px;
+  background: var(--surface); border: 1px solid var(--line); text-align: left;
+}
+.plan-opt.is-life {
+  border-color: color-mix(in srgb, #ff8a1f 55%, var(--line));
+  background: color-mix(in srgb, #ffc94a 9%, var(--surface));
+}
+.po-top { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+.po-name { font-size: 16px; font-weight: 800; color: var(--text); }
+.plan-opt.is-life .po-name::before {
+  content: ""; display: inline-block; width: 14px; height: 14px; margin-right: 6px; vertical-align: -1px;
+  background: linear-gradient(140deg, #ffc94a, #ff8a1f);
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M3 8l4.5 3.5L12 5l4.5 6.5L21 8l-2 11H5z'/%3E%3C/svg%3E") center / contain no-repeat;
+          mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M3 8l4.5 3.5L12 5l4.5 6.5L21 8l-2 11H5z'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+.po-price { font-size: 19px; font-weight: 900; color: var(--text); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.po-price small { font-size: 12.5px; font-weight: 650; color: var(--muted); }
+.po-note { margin: 0; font-size: 13px; line-height: 1.45; color: var(--muted); }
+.po-buy { width: 100%; margin-top: 4px; }
+.plan-why { margin: 0 0 12px; padding: 10px 12px; border-radius: 12px; font-size: 13.5px; font-weight: 650;
+  background: var(--accent-soft); color: var(--accent2); }
+.plan-dialog .err:empty { display: none; }
+.gift-lock .sub-gate .plan-opt { padding: 12px; }
+.plan-up { flex: none; width: auto !important; margin: 0 !important; padding: 8px 14px; min-height: 36px; font-size: 13.5px; }
+.plan-both { margin-top: 12px; padding: 12px; border-radius: 12px; background: color-mix(in srgb, #ffc94a 14%, var(--surface)); }
+.plan-both .vault-note { margin: 0 0 8px; }
+.plan-both .ghost { width: 100%; }
+.plan-pill.is-nudge { background: #fff; color: var(--brand-b); border-color: #fff; }
+.plan-pill.is-nudge svg { color: #ff7a2f; }
+.plan-pill.is-hop { animation: gk-hop .8s cubic-bezier(.3,1.4,.5,1) 1; }
+@media (prefers-reduced-motion: reduce) { .plan-pill.is-hop { animation: none; } }
+
+/* --- export: a Premium lock until a paid plan (C5) ------------------------- */
+#vault-export.is-locked {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  background: var(--surface2); color: var(--text); border: 1px solid var(--line); box-shadow: none;
+}
+#vault-export.is-locked .ico svg { width: 16px; height: 16px; }
+.prem-tag {
+  padding: 2px 8px; border-radius: 999px; font-size: 10.5px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase;
+  background: linear-gradient(140deg, #ffc94a, #ff8a1f); color: #fff;
+}
+
+/* --- the ways in, first in the Add sheet (A6, E1, E6) --------------------- */
+.intake { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: 0 0 10px; }
+.intake-btn {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+  min-height: 78px; padding: 10px 6px; border-radius: 16px; border: 1px solid var(--line);
+  background: var(--surface); color: var(--text); font: inherit; font-size: 13px; font-weight: 750; line-height: 1.2; text-align: center;
+}
+.intake-btn svg { color: var(--accent2); }
+.intake-btn#in-scan { background: linear-gradient(135deg, var(--brand-a), var(--brand-b)); color: #fff; border-color: transparent; }
+.intake-btn#in-scan svg { color: #fff; }
+.intake-btn:active { transform: scale(.98); }
+.intake-btn:disabled { opacity: .55; }
+.tab.tab-hidden { display: none !important; }
+#add-panel.is-editing .intake, #add-panel.is-editing .collect-bar, #add-panel.is-editing .intake-status { display: none; }
+.intake-status { margin: -2px 0 10px; font-size: 13.5px; line-height: 1.45; color: var(--muted); }
+.intake-status:empty { display: none; }
+.intake-status.is-err { color: var(--amber); }
+/* the Scan tab's own intro duplicates the intake row's buttons */
+#tab-scan .cam-intro .cam-shot, #tab-scan .cam-intro + .shot-status { display: none; }
+
+/* --- Collect mode (E7): a live strip while it listens ---------------------- */
+.collect-bar {
+  display: flex; align-items: center; gap: 10px; margin: 0 0 10px; padding: 10px 12px; border-radius: 14px;
+  background: color-mix(in srgb, #2e9e64 12%, var(--surface)); color: var(--text); font-size: 13.5px; line-height: 1.4;
+  border: 1px solid color-mix(in srgb, #2e9e64 35%, var(--line));
+}
+.collect-bar.hidden { display: none; }
+.cb-dot { flex: none; width: 10px; height: 10px; border-radius: 50%; background: #2e9e64; animation: cb-pulse 1.4s ease-in-out infinite; }
+@keyframes cb-pulse { 50% { opacity: .35; transform: scale(.8); } }
+.cb-text { flex: 1; min-width: 0; font-weight: 650; }
+.cb-stop { flex: none; min-height: 34px; padding: 0 14px; border-radius: 999px; border: 0; background: #2e9e64; color: #fff; font: inherit; font-weight: 750; }
+@media (prefers-reduced-motion: reduce) { .cb-dot { animation: none; } }
+
+/* --- more ways in, under the paste box (E5, B10, E7) ----------------------- */
+.more-ways { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: 0 0 8px; }
+.mw-btn {
+  display: flex; align-items: center; justify-content: center; gap: 6px; min-height: 44px; padding: 8px 6px;
+  border-radius: 12px; border: 1px dashed color-mix(in srgb, var(--accent) 45%, var(--line));
+  background: var(--accent-soft); color: var(--accent2); font: inherit; font-size: 12.5px; font-weight: 750;
+}
+.mw-btn svg { flex: none; }
+.mw-note { margin: 0 0 12px; }
+
+/* --- the bulk review (E3) --------------------------------------------------- */
+.pv-sum { font-size: 13.5px; color: var(--muted); }
+.pv-sum b { color: var(--text); font-weight: 800; }
+.pv-check { color: var(--amber); font-weight: 750; }
+.bulk-tools { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 0 0 10px; }
+.bulk-tools.hidden { display: none; }
+.bt-field { position: relative; display: grid; gap: 3px; margin: 0; }
+.bt-field input { width: 100%; box-sizing: border-box; min-height: 40px; font-size: 13.5px; }
+.bt-date span { font-size: 11px; font-weight: 700; color: var(--muted); }
+.bt-date { grid-template-rows: auto 1fr; }
+.bulk-tools .sp-wrap input { margin-top: 15px; }
+.preview-row { position: relative; touch-action: pan-y; transition: transform .2s ease, opacity .2s ease; }
+.preview-row.is-swiping { transition: none; }
+.preview-row input.is-check { border-color: var(--amber); box-shadow: 0 0 0 2px color-mix(in srgb, var(--amber) 22%, transparent); }
+.preview-row input.is-flash { animation: in-flash .6s ease-out; }
+@keyframes in-flash { from { background: var(--accent-soft); } }
+.preview-row.is-dup { opacity: .55; }
+.preview-row.is-dup input { background: transparent; }
+.prow-badge {
+  position: absolute; top: -8px; left: 10px; padding: 1px 8px; border-radius: 999px;
+  font-size: 10.5px; font-weight: 800; letter-spacing: .04em; background: var(--amber); color: #fff;
+}
+.preview-row.is-dup .prow-badge { background: var(--muted); }
+.prow-badge.hidden { display: none; }
+#save-all-btn:disabled { opacity: .5; }
+
+/* --- camera: lens button beside the torch (A1) ------------------------------ */
+.cam-lens { right: 60px; }
+
+/* --- x inside a field (A7) --------------------------------------------------- */
+.clr-wrap { position: relative; display: block; }
+.clr-wrap > input { padding-right: 40px; }
+.clr-x {
+  position: absolute; top: 50%; right: 6px; transform: translateY(-50%);
+  width: 30px; height: 30px; min-height: 30px; padding: 0; border: 0; border-radius: 50%;
+  display: grid; place-items: center; background: var(--surface2); color: var(--muted); font-size: 18px; line-height: 1;
+}
+.clr-x.hidden { display: none; }
+
+/* --- Settings: fingerprint note + version line (A11) ---------------------- */
+#bio-auto-note { margin-top: 2px; }
+#bio-auto-note.hidden { display: none; }
+.about-row { display: flex; justify-content: space-between; gap: 12px; padding: 6px 0; font-size: 14px; color: var(--muted); }
+.about-row b { color: var(--text); font-weight: 700; font-variant-numeric: tabular-nums; text-align: right; }
+
+/* --- B5: frozen header - the vault card and the filter row stay put -------- */
+@media (max-width: 720px) {
+  body.is-frozen main { padding-top: 0; }
+  body.is-frozen .hero {
+    position: sticky; top: var(--tb-h, 64px); z-index: 4; margin-bottom: 0;
+    padding: 12px 0 10px; background: var(--bg);
+  }
+  body.is-frozen .mfilter-bar {
+    position: sticky; top: calc(var(--tb-h, 64px) + var(--hero-h, 200px)); z-index: 3;
+    margin: 0 0 10px; padding: 2px 0 10px; background: var(--bg);
+  }
+}
+/* small phones: the frozen part stays compact so the list keeps its room */
+@media (max-width: 720px) and (max-height: 760px) {
+  body.is-frozen .vault-value { padding: 10px 14px 9px; }
+  body.is-frozen .vv-amount { font-size: 26px; }
+  body.is-frozen .vault-value .kpis { margin-top: 8px; }
+  body.is-frozen .vault-value .kpi { padding: 5px 2px 4px; }
+  body.is-frozen .vault-value .kpi-num { font-size: 16px; }
+  body.is-frozen .combine-toggle { margin-top: 6px; }
+}
+
+/* --- B6: hide the value / collapse the card -------------------------------- */
+.vv-line { display: flex; align-items: center; gap: 8px; }
+.vv-amount.is-masked { letter-spacing: .06em; }
+.vv-eye {
+  width: 32px; height: 32px; min-height: 32px; padding: 0; border: 0; border-radius: 50%;
+  display: grid; place-items: center; background: rgba(255,255,255,.2); color: #fff;
+}
+.vv-eye .i-eye-off { display: none; }
+.vv-eye[aria-pressed="true"] .i-eye { display: none; }
+.vv-eye[aria-pressed="true"] .i-eye-off { display: block; }
+#vv-amount { cursor: pointer; }
+.vv-fold svg { display: block; }
+.hero.is-collapsed .vault-value {
+  flex-direction: row; flex-wrap: wrap; align-items: center; column-gap: 10px; row-gap: 2px;
+  padding: 9px 14px; border-radius: 16px;
+}
+.hero.is-collapsed .vv-ribbon, .hero.is-collapsed .kpis, .hero.is-collapsed .combine-toggle { display: none; }
+.hero.is-collapsed .vv-label { font-size: 9.5px; }
+.hero.is-collapsed .vv-amount { font-size: 20px; margin: 0; }
+.hero.is-collapsed .vv-sub { margin-left: auto; font-size: 12px; }
+.hero.is-collapsed .plan-pill { margin: 0; order: 9; }
+/* the fold arrow: top-right of the open card; end of the slim bar, pointing down */
+.vv-fold {
+  position: absolute !important; top: 8px; right: 8px; z-index: 2;
+  width: 34px; height: 34px; min-height: 34px; padding: 0; border: 0; border-radius: 50%;
+  display: grid; place-items: center; background: rgba(255,255,255,.22); color: #fff;
+}
+.vv-fold svg { transition: transform .22s ease; }
+.hero.is-collapsed .vv-fold { position: relative !important; top: auto; right: auto; order: 10; width: 30px; height: 30px; min-height: 30px; margin-left: 2px; }
+.hero.is-collapsed .vv-fold svg { transform: rotate(180deg); }
+@media (prefers-reduced-motion: reduce) { .vv-fold svg { transition: none; } }
+.hm-row { gap: 12px; text-align: left; min-height: 52px !important; }
+.hm-text { display: grid; gap: 1px; }
+.hm-text b { font-size: 14px; }
+.hm-text small { font-size: 12px; color: var(--muted); font-weight: 550; }
+.hm-sw { flex: none; position: relative; width: 36px; height: 20px; border-radius: 10px; background: var(--line2); transition: background .15s; }
+.hm-sw::after { content: ""; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%; background: #fff; transition: transform .15s; }
+.hm-row[aria-checked="true"] .hm-sw { background: var(--accent); }
+.gt-menu button.hm-row::after { content: none; }    /* the switch says it; no extra tick */
+.hm-row[aria-checked="true"] .hm-sw::after { transform: translateX(16px); }
+
+/* --- B3 / B6 / B7: icon pills beside the store chip ------------------------- */
+.mfilter-pill.mfp-icon { flex: none; width: 38px; min-width: 38px; padding: 0 !important; justify-content: center; }
+.mfilter-pill.mfp-icon.is-on { background: color-mix(in srgb, var(--accent) 14%, var(--surface)); color: var(--accent2); border-color: color-mix(in srgb, var(--accent) 45%, var(--line)); }
+.mfp-lockico { display: inline-grid; place-items: center; opacity: .9; }
+.gt-menu .gt-menu-act.is-danger { color: var(--red); }
+
+/* --- B2: next / previous in the checkout view -------------------------------- */
+.use-nav { display: inline-flex; align-items: center; gap: 2px; margin-left: auto; margin-right: 4px; }
+.use-nav.hidden { display: none; }
+.use-nav .icon-btn, #use-close {
+  width: 40px; min-width: 40px; height: 40px; min-height: 40px; padding: 0;
+  display: grid; place-items: center; line-height: 1;
+}
+.use-nav .icon-btn svg { display: block; }
+.use-nav .icon-btn:disabled { opacity: .3; }
+.use-pos { min-width: 52px; text-align: center; font-size: 12.5px; font-weight: 750; color: var(--muted); font-variant-numeric: tabular-nums; }
+.use-dialog { touch-action: pan-y; }
+.use-dialog.is-step-l .lic-body { animation: step-l .22s ease-out; }
+.use-dialog.is-step-r .lic-body { animation: step-r .22s ease-out; }
+@keyframes step-l { from { transform: translateX(24px); opacity: .3; } }
+@keyframes step-r { from { transform: translateX(-24px); opacity: .3; } }
+@media (prefers-reduced-motion: reduce) { .use-dialog.is-step-l .lic-body, .use-dialog.is-step-r .lic-body { animation: none; } }
+
+/* --- B7: the countdown delete, Manage stores, Undo strip --------------------- */
+.del-store { display: grid; gap: 8px; justify-items: center; text-align: center; padding: 6px 4px 2px; }
+.ds-glyph { width: 52px; height: 52px; border-radius: 15px; font-size: 19px; }
+.ds-facts { margin: 0; font-size: 14.5px; color: var(--text); }
+.del-store .mpw-foot { width: 100%; }
+.ds-go { position: relative; overflow: hidden; min-width: 150px; }
+.ds-go:disabled { opacity: 1; filter: saturate(.55); }
+.ds-go .ds-label { position: relative; font-variant-numeric: tabular-nums; }
+.ds-go .ds-fill { position: absolute; inset: 0; transform-origin: left; transform: scaleX(0); background: rgba(255,255,255,.22); }
+.ds-go.is-counting .ds-fill { animation: ds-fill var(--ds-secs, 5s) linear forwards; }
+@keyframes ds-fill { to { transform: scaleX(1); } }
+.ms-list { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 4px; }
+.ms-row { display: flex; align-items: center; gap: 10px; min-height: 46px; padding: 4px 4px 4px 6px; border-radius: 12px; background: var(--surface2); }
+.ms-name { flex: 1; min-width: 0; font-weight: 700; font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ms-n { flex: none; font-size: 12.5px; color: var(--muted); font-weight: 650; }
+.ms-del { flex: none; width: 40px; height: 40px; min-height: 40px; padding: 0; border: 0; border-radius: 10px; display: grid; place-items: center; background: transparent; color: var(--red); }
+.ms-del .ico svg { width: 18px; height: 18px; }
+.ms-empty { color: var(--muted); font-size: 13.5px; padding: 6px 2px; }
+.undo-bar {
+  position: fixed; left: 12px; right: 12px; bottom: calc(14px + env(safe-area-inset-bottom)); z-index: 80;
+  display: flex; align-items: center; gap: 12px; padding: 12px 14px 14px; border-radius: 16px; overflow: hidden;
+  background: #1d2140; color: #fff; box-shadow: 0 12px 30px -12px rgba(0,0,0,.45);
+  animation: sheet-up .22s cubic-bezier(.2,.9,.3,1);
+}
+.undo-text { flex: 1; min-width: 0; font-size: 14px; font-weight: 650; }
+.undo-btn { flex: none; min-height: 36px; padding: 0 16px; border: 0; border-radius: 999px; background: #fff; color: #1d2140; font: inherit; font-weight: 800; }
+.undo-time { position: absolute; left: 0; bottom: 0; height: 3px; width: 100%; background: #ff7a2f; transform-origin: left; }
+.undo-bar.is-run .undo-time { animation: undo-drain 10s linear forwards; }
+@keyframes undo-drain { to { transform: scaleX(0); } }
+
+/* --- B8: export a brand from its combined tile ------------------------------- */
+.card.gtile.brand-tile { position: relative; }
+.bt-export {
+  position: absolute; top: 6px; right: 6px; width: 32px; height: 32px; min-height: 32px; padding: 0; border: 0;
+  border-radius: 10px; display: grid; place-items: center; background: color-mix(in srgb, var(--gc-a) 14%, var(--surface)); color: color-mix(in srgb, var(--gc-b) 80%, var(--text));
+}
+.brand-tile .bt-right { padding-right: 46px; }
+
+/* --- B9: No expiry, and the validity note from the store rule ---------------- */
+.no-exp { display: inline-flex; align-items: center; gap: 6px; margin-top: 6px; font-size: 13px; font-weight: 650; color: var(--muted); text-transform: none; letter-spacing: 0; }
+.no-exp input { width: 18px; height: 18px; margin: 0; accent-color: var(--accent); }
+#f-expiry:disabled { opacity: .45; }
+.exp-rule { margin: -4px 0 4px; padding: 8px 10px; border-radius: 10px; font-size: 12.5px; line-height: 1.45; font-weight: 600; background: var(--accent-soft); color: var(--accent2); }
+.exp-rule.hidden { display: none; }
+
+/* --- D2: Checkout mode - the code as a barcode / QR -------------------------- */
+.use-scan { display: grid; gap: 8px; margin: 2px 0 12px; }
+.use-scan.hidden { display: none; }
+.use-scan-seg { justify-self: center; margin: 0; }
+.use-scan-seg button[aria-checked="true"] { background: var(--surface); color: var(--accent2); box-shadow: var(--shadow-sm); }
+.use-scan-art { display: grid; place-items: center; padding: 14px; border-radius: 14px; background: #fff; border: 1px solid var(--line); }
+.use-scan-art svg { width: 100%; height: 88px; display: block; }
+.use-scan-art.is-qr svg { width: min(62vw, 230px); height: auto; aspect-ratio: 1; }
+.use-scan-note { margin: 0; text-align: center; font-size: 12.5px; color: var(--muted); }
+
+
+/* --- 1.3.11 round 2: icons and pills that survive any phone font size ------
+   Android hands the system font size to the WebView (text zoom). Text grows;
+   a "×" character in a fixed 22px circle did not fit and came out cut. Now:
+   every x / arrow is a drawn SVG in a fixed box, every count badge is sized
+   in em so it grows with its number, and pill text truncates instead of
+   pushing its own controls out. */
+.lic-head { gap: 8px; }
+.lic-head h2 { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lic-head .icon-btn.icon-only, #lic-close, #bell-close, #filter-close, #add-close, #terms-close, #use-close, #spend-close, #plan-close {
+  flex: none; width: 40px !important; min-width: 40px !important; height: 40px !important; min-height: 40px !important;
+  padding: 0 !important; display: grid !important; place-items: center; border-radius: 50%; line-height: 0;
+}
+.x-ico { display: block; flex: none; }
+.mfp-clear { width: 22px; height: 22px; flex: none; line-height: 0; font-size: 0; }
+.mfp-clear .x-ico, .mfp-caret { width: 14px; height: 14px; }
+.mfilter-pill { min-width: 0; max-width: 72vw; }
+.mfilter-pill .mfp-text { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mfp-count { flex: none; line-height: 1.5; }
+.prow-x { display: grid; place-items: center; line-height: 0; padding: 0; flex: none; }
+.bell-x { line-height: 0; }
+.clr-x { font-size: 0; line-height: 0; }
+.bell-badge {
+  min-width: 1.6em; height: 1.6em; padding: 0 .35em; line-height: 1.6em; border-radius: .8em;
+  font-size: 11px; font-variant-numeric: tabular-nums; box-sizing: border-box;
+  display: grid; place-items: center; top: 0; right: -2px;
+}
+.bell-badge.hidden { display: none; }
+
+/* Settings > Text size: four pills in one row */
+.text-choices { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.text-choices .lock-choice { padding-left: 4px; padding-right: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.text-choices [data-zoom="85"] { font-size: 12px; }
+.text-choices [data-zoom="115"] { font-size: 15px; }
+.text-choices [data-zoom="130"] { font-size: 16px; }
+
+/* --- folded vault card: ONE line - the value, its eye, the plan as an icon,
+   the arrow. No card count, no plan words (1.3.11 round 2). */
+.hero.is-collapsed .vault-value { flex-wrap: nowrap; column-gap: 8px; padding: 8px 10px 8px 14px; }
+.hero.is-collapsed .vv-sub { display: none; }
+.hero.is-collapsed .vv-label { flex: none; }
+.hero.is-collapsed .vv-line { flex: 1; min-width: 0; gap: 6px; }
+.hero.is-collapsed .vv-amount { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.hero.is-collapsed .vv-eye { width: 28px; height: 28px; min-height: 28px; flex: none; }
+.hero.is-collapsed .plan-pill { flex: none; padding: 4px; border-radius: 50%; }
+.hero.is-collapsed .plan-pill .pp-text { display: none; }
+@media (max-width: 380px) { .hero.is-collapsed .vv-label { display: none; } }
+
+/* --- delete: bin beside Export on a brand tile; Settings > Delete stores --- */
+.bt-acts { position: absolute; top: 6px; right: 6px; display: flex; gap: 4px; }
+.bt-acts .bt-export { position: static; }
+.bt-del {
+  width: 32px; height: 32px; min-height: 32px; padding: 0; border: 0; border-radius: 10px;
+  display: grid; place-items: center; background: color-mix(in srgb, var(--red) 10%, var(--surface)); color: var(--red);
+}
+.bt-del .ico svg { width: 17px; height: 17px; }
+.brand-tile .bt-right { padding-right: 84px; }
+#ms-sheet .ms-list { max-height: 56dvh; overflow-y: auto; display: grid; gap: 2px; margin: 0; padding: 0; list-style: none; }
+.ms-foot { display: flex; align-items: center; gap: 10px; margin-top: 12px; }
+.ms-sum { flex: 1; color: var(--muted); font-size: 13.5px; font-weight: 650; }
+#ms-delete:disabled { opacity: .45; }
+.ds-many { display: grid; place-items: center; background: color-mix(in srgb, var(--red) 12%, var(--surface)); color: var(--red); font-weight: 900; }
+.ds-names { margin: 0; font-size: 13px; color: var(--muted); }
+
+/* --- the review, one voucher at a time; the camera panel likewise ---------- */
+.pv-pager { display: flex; align-items: center; gap: 8px; margin: 0 0 10px; }
+.pv-pager.hidden { display: none; }
+.pv-nav { flex: none; width: 44px !important; min-width: 44px !important; height: 44px !important; min-height: 44px !important; padding: 0 !important; display: grid !important; place-items: center; border-radius: 50%; }
+.pv-nav:disabled { opacity: .3; }
+.pv-mid { flex: 1; min-width: 0; display: grid; justify-items: center; gap: 5px; }
+.pv-pos { font-size: 14px; font-weight: 800; color: var(--text); font-variant-numeric: tabular-nums; }
+.pv-dots { display: flex; flex-wrap: wrap; justify-content: center; gap: 5px; max-width: 100%; }
+.pv-dots i { width: 8px; height: 8px; border-radius: 50%; background: var(--line2); cursor: pointer; }
+.pv-dots i.chk { background: var(--amber); }
+.pv-dots i.dup { background: transparent; box-shadow: inset 0 0 0 1.5px var(--muted); }
+.pv-dots i.on { transform: scale(1.35); background: var(--accent); }
+.preview.is-paged .preview-row:not(.is-current) { display: none; }
+.preview-row { grid-template-columns: 1fr 1fr !important; align-items: end; gap: 8px 10px; padding: 14px 12px 12px; }
+.pr-f { display: grid; gap: 3px; min-width: 0; margin: 0; font-size: 11.5px; font-weight: 700; color: var(--muted); text-transform: none; letter-spacing: 0; }
+.pr-f input { width: 100%; min-width: 0; font-size: 15px; }
+.pr-code { grid-column: 1 / -1; }
+.pr-code input { font-family: ui-monospace, Menlo, Consolas, monospace; font-weight: 700; letter-spacing: .04em; }
+.preview-row .prow-x { position: absolute; top: 6px; right: 6px; width: 32px; height: 32px; }
+.preview-row.is-in-l { animation: pv-in-l .2s ease-out; }
+.preview-row.is-in-r { animation: pv-in-r .2s ease-out; }
+@keyframes pv-in-l { from { transform: translateX(26px); opacity: .3; } }
+@keyframes pv-in-r { from { transform: translateX(-26px); opacity: .3; } }
+@media (prefers-reduced-motion: reduce) { .preview-row.is-in-l, .preview-row.is-in-r { animation: none; } }
+.lf-pager { margin: 0; }
+
+/* --- the scanner keeps its width: nothing inside may push the sheet wider
+   (long codes, the raw text, a curved-edge screen) ------------------------- */
+#add-sheet .lic-dialog, #add-sheet .lic-body, #add-panel, .tab-body, .cam-live, .live-fields, .scan-review, .preview { min-width: 0; max-width: 100%; }
+#add-sheet .lic-dialog { overflow-x: hidden; }
+.cam-view { contain: layout paint; max-width: 100%; }
+.lf { min-width: 0; }
+.scan-raw pre, #scan-text { white-space: pre-wrap; word-break: break-word; overflow-wrap: anywhere; max-width: 100%; }
+
+/* --- big phone fonts: long words wrap, grids never grow past the sheet ----- */
+.lic-dialog { overflow-x: hidden; }
+.lic-body { overflow-wrap: anywhere; }
+.use-code { overflow-wrap: anywhere; word-break: break-all; }
+.grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+@media (max-width: 720px) { #add-panel .grid { grid-template-columns: minmax(0, 1fr); } }
+.grid label, .grid input { min-width: 0; max-width: 100%; }
+
+/* --- the Add sheet, round 2: the ways in, then one option at a time -------- */
+.tabs.tabs-hidden { display: none !important; }
+.add-launch { display: grid; gap: 10px; margin: 0 0 10px; }
+.al-scan {
+  display: flex; align-items: center; gap: 14px; width: 100%; min-height: 84px; padding: 14px 16px; border: 0; border-radius: 18px;
+  background: linear-gradient(135deg, var(--brand-a), var(--brand-b)); color: #fff; text-align: left; font: inherit;
+}
+.al-scan svg { flex: none; }
+.al-t { display: grid; gap: 2px; min-width: 0; }
+.al-t b { font-size: 17px; font-weight: 800; }
+.al-t small { font-size: 12.5px; opacity: .9; line-height: 1.35; }
+.al-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.al-tile {
+  display: grid; justify-items: start; align-content: start; gap: 4px; min-height: 92px; padding: 12px; border-radius: 16px;
+  border: 1px solid var(--line); background: var(--surface); color: var(--text); text-align: left; font: inherit;
+}
+.al-tile svg { color: var(--accent2); margin-bottom: 2px; }
+.al-tile b { font-size: 14.5px; font-weight: 800; }
+.al-tile small { font-size: 12px; color: var(--muted); line-height: 1.35; }
+.al-tile:active, .al-scan:active { transform: scale(.985); }
+.al-resume { width: 100%; min-height: 44px; border-radius: 12px; border: 1px dashed color-mix(in srgb, var(--accent) 50%, var(--line));
+  background: var(--accent-soft); color: var(--accent2); font: inherit; font-weight: 750; }
+.add-bar {
+  display: flex; align-items: center; gap: 10px; width: 100%; min-height: 48px; margin: 0 0 12px; padding: 6px 8px 6px 12px;
+  border-radius: 14px; border: 1px solid var(--line); background: var(--surface2); color: var(--text); font: inherit; text-align: left;
+}
+.add-bar.hidden { display: none; }
+.ab-ico { flex: none; display: grid; place-items: center; width: 32px; height: 32px; border-radius: 10px; background: var(--accent-soft); color: var(--accent2); }
+.ab-ico svg { width: 20px; height: 20px; }
+.ab-name { flex: 1; min-width: 0; font-weight: 800; font-size: 15px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ab-change { flex: none; display: inline-flex; align-items: center; gap: 2px; font-size: 13px; font-weight: 700; color: var(--accent2); }
+#add-panel.is-editing .add-launch, #add-panel.is-editing .add-bar { display: none !important; }
+.up-list { display: grid; gap: 8px; }
+.up-opt {
+  display: flex; align-items: center; gap: 12px; width: 100%; min-height: 64px; padding: 10px 14px; border-radius: 14px;
+  border: 1px solid var(--line); background: var(--surface); color: var(--text); text-align: left; font: inherit;
+}
+.up-opt svg { flex: none; color: var(--accent2); }
+.up-opt span { display: grid; gap: 2px; min-width: 0; }
+.up-opt b { font-size: 15px; font-weight: 800; }
+.up-opt small { font-size: 12.5px; color: var(--muted); line-height: 1.35; }
+.up-opt:disabled { opacity: .55; }
+.paste-note { margin: 0 0 8px; }
+/* the review list shows only in its own modes */
+#add-panel:not([data-mode="review"]):not([data-mode="collect"]):not([data-mode="paste"]) #preview { display: none; }
+
+/* --- combined brand tile, round 2: the total gets the room; the count is a
+   number, and Export + bin sit at the end of the card-stack bar, small and in
+   the tile's own colours (no red) ------------------------------------------ */
+.brand-tile .bt-right { padding-right: 14px !important; align-items: stretch; }
+.brand-tile .gt-title { text-align: right; }
+.bt-meta { justify-content: flex-end; width: 100%; gap: 6px; }
+.bt-count { font-variant-numeric: tabular-nums; }
+.bt-acts { position: static !important; display: inline-flex; gap: 2px; margin-left: 4px; }
+.bt-export, .bt-del {
+  position: static !important; width: 28px !important; height: 28px !important; min-height: 28px !important;
+  border-radius: 8px !important; background: transparent !important;
+  color: color-mix(in srgb, var(--gc-b) 70%, var(--muted)) !important;
+}
+.bt-export svg, .bt-del .ico svg { width: 15px !important; height: 15px !important; }
+.bt-export:active, .bt-del:active { background: color-mix(in srgb, var(--gc-a) 14%, transparent) !important; }
+
+/* bulk text box + Collect codes steps */
+.paste-note { margin: 0 0 8px; font-size: 13.5px; line-height: 1.5; color: var(--muted); }
+.paste-note b { color: var(--text); }
+.collect-help { display: none; margin: 0 0 10px; padding: 12px 14px; border-radius: 14px; background: var(--surface2); }
+#add-panel[data-mode="collect"] .collect-help { display: block; }
+.ch-lead { margin: 0 0 6px; font-size: 13.5px; font-weight: 700; color: var(--text); }
+.ch-steps { margin: 0; padding-left: 20px; display: grid; gap: 4px; font-size: 13.5px; line-height: 1.45; color: var(--muted); }
+.ch-steps li::marker { color: var(--accent2); font-weight: 800; }
+
+/* "5 gift cards found" - one read, several cards, said plainly */
+.found-banner {
+  display: flex; align-items: center; gap: 12px; margin: 0 0 10px; padding: 12px 14px; border-radius: 14px;
+  background: linear-gradient(135deg, var(--brand-a), var(--brand-b)); color: #fff;
+}
+.found-banner.hidden { display: none; }
+.found-banner svg { flex: none; }
+.found-banner span { display: grid; gap: 2px; min-width: 0; }
+.found-banner b { font-size: 16px; font-weight: 800; }
+.found-banner small { font-size: 12.5px; opacity: .92; line-height: 1.35; }
+.found-banner.is-pop { animation: found-pop .45s cubic-bezier(.3,1.4,.5,1); }
+@keyframes found-pop { 0% { transform: scale(.94); opacity: .2; } 100% { transform: none; opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .found-banner.is-pop { animation: none; } }
+.lf-pager .pv-pos { font-size: 15px; }
+
+/* review rows: the store list opens under the Store field */
+.pr-brand { position: relative; }
+.pr-brand .sp-suggest { position: absolute; left: 0; right: 0; top: 100%; z-index: 30; }
+.preview-row.is-current { z-index: 2; }
+.preview-row input[data-k="brand"].is-flash { animation: in-flash .6s ease-out; }
+
+/* --- round 3: back to "Add a card" + the three steps ----------------------- */
+.add-nav { display: flex; align-items: center; gap: 8px; margin: 0 0 12px; }
+.add-nav.hidden { display: none; }
+.add-back {
+  flex: none; display: inline-flex; align-items: center; gap: 2px; min-height: 40px; padding: 0 12px 0 6px;
+  border-radius: 999px; border: 1px solid var(--line); background: var(--surface); color: var(--accent2); font: inherit; font-weight: 800; font-size: 14px;
+}
+.add-steps { flex: 1; min-width: 0; display: flex; justify-content: flex-end; gap: 4px; margin: 0; padding: 0; list-style: none; }
+.add-steps li { display: inline-flex; align-items: center; gap: 4px; min-width: 0; font-size: 12px; font-weight: 700; color: var(--muted); }
+.add-steps li i { flex: none; display: grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; font-style: normal; font-size: 11px; font-weight: 800;
+  background: var(--surface2); color: var(--muted); border: 1px solid var(--line); }
+.add-steps li span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 76px; }
+.add-steps li + li::before { content: ""; width: 8px; height: 1.5px; background: var(--line2); margin-right: 2px; }
+.add-steps li.is-on { color: var(--text); }
+.add-steps li.is-on i { background: var(--accent); color: #fff; border-color: transparent; }
+.add-steps li.is-done i { background: var(--accent-soft); color: var(--accent2); }
+@media (max-width: 380px) { .add-steps li:not(.is-on) span { display: none; } }
+
+/* --- round 3: the scanner's fields can be typed over and locked ----------- */
+.lf { position: relative; gap: 8px; padding: 4px 4px 4px 12px; }
+.lf-v { flex: 1; min-width: 0; border: 0; background: transparent; padding: 6px 4px; font: inherit; font-weight: 750; color: var(--text); min-height: 32px; }
+.lf-v:focus { outline: 2px solid var(--accent); outline-offset: 1px; border-radius: 8px; background: var(--surface); }
+.lf-v::placeholder { color: var(--muted); }
+.lf.is-reading .lf-v { opacity: .65; }
+.lf.is-locked::after { content: none !important; }
+.lf.is-pinned { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, var(--surface)); }
+.lf-pin { flex: none; width: 36px; height: 36px; min-height: 36px; padding: 0; border: 0; border-radius: 10px; display: grid; place-items: center;
+  background: transparent; color: var(--muted); }
+.lf-pin:disabled { opacity: .3; }
+.lf-pin .i-lck { display: none; }
+.lf-pin[aria-pressed="true"] { color: #fff; background: var(--accent); }
+.lf-pin[aria-pressed="true"] .i-unl { display: none; }
+.lf-pin[aria-pressed="true"] .i-lck { display: block; }
+.lf.is-locked .lf-pin { color: var(--accent2); }
+#lf-brand-sug { position: absolute; left: 8px; right: 8px; top: 100%; z-index: 30; }
+
+/* --- round 3: Remove is a labelled button; Undo for a few seconds --------- */
+.preview-row .prow-x {
+  position: static !important; grid-column: 1 / -1; justify-self: start; width: auto !important; height: auto !important; min-height: 36px;
+  display: inline-flex !important; align-items: center; gap: 6px; padding: 4px 12px !important; border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--red) 35%, var(--line)) !important; background: transparent; color: var(--red); font: inherit; font-size: 13px; font-weight: 700; line-height: 1;
+}
+.preview-row .prow-x .ico svg { width: 16px; height: 16px; }
+.preview-row.is-gone { display: none !important; }
+.pv-undo { display: flex; align-items: center; gap: 10px; margin: 0 0 10px; padding: 10px 12px; border-radius: 12px; background: #1d2140; color: #fff; font-size: 13.5px; font-weight: 650; }
+.pv-undo.hidden { display: none; }
+.pv-undo span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pv-undo button { flex: none; min-height: 32px; padding: 0 14px; border: 0; border-radius: 999px; background: #fff; color: #1d2140; font: inherit; font-weight: 800; }
+
+/* --- round 3: the confirmation before saving ------------------------------- */
+.cf { display: grid; gap: 8px; }
+.cf-sum { margin: 0; color: var(--muted); font-size: 14px; }
+.cf-sum:empty { display: none; }
+.cf-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; max-height: 46dvh; overflow-y: auto; }
+.cf-list li { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 12px; background: var(--surface2); }
+.cf-list li.is-chk { box-shadow: inset 3px 0 0 var(--amber); }
+.cf-t { flex: 1; min-width: 0; display: grid; }
+.cf-t b { font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cf-t small, .cf-v small { font-size: 12px; color: var(--muted); font-family: ui-monospace, Menlo, Consolas, monospace; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cf-v { flex: none; display: grid; justify-items: end; font-weight: 800; font-size: 14px; }
+.cf-warn { margin: 0; font-size: 13px; font-weight: 700; color: var(--amber); }
+
+#add-panel.is-editing .add-nav { display: none !important; }
+
+/* --- round 4: readable steps, Start over, a line saying what to do -------- */
+.add-nav { flex-direction: column; align-items: stretch; gap: 8px; }
+.an-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.add-reset { display: inline-flex; align-items: center; gap: 5px; min-height: 40px; padding: 0 14px; border-radius: 999px;
+  border: 1px solid var(--line); background: var(--surface); color: var(--text); font: inherit; font-size: 14px; font-weight: 700; }
+.add-reset.hidden { display: none; }
+.add-steps { justify-content: space-between; gap: 6px; }
+.add-steps li { flex: 1; justify-content: center; gap: 6px; padding: 8px 4px; border-radius: 12px; background: var(--surface2);
+  font-size: 14px; font-weight: 750; cursor: pointer; }
+.add-steps li + li::before { content: none; }
+.add-steps li i { width: 24px; height: 24px; font-size: 13px; }
+.add-steps li span { max-width: none; overflow: visible; white-space: normal; text-align: left; line-height: 1.15; }
+.add-steps li.is-on { background: var(--accent-soft); color: var(--accent2); box-shadow: inset 0 0 0 1.5px var(--accent); }
+@media (max-width: 380px) { .add-steps li:not(.is-on) span { display: inline; } .add-steps li { font-size: 13px; } }
+.add-hint { margin: 0; padding: 8px 12px; border-radius: 12px; background: var(--surface2); font-size: 14px; line-height: 1.45; color: var(--text); }
+.add-hint:empty { display: none; }
+#paste-text { min-height: 220px; font-size: 15px; }

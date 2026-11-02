@@ -167,6 +167,39 @@ a.rv:hover .rv-go svg{transform:translateX(3px)}
 .rv.soon-rv .rv-stars{opacity:.35}
 .rv.soon-rv .rv-go{background:transparent;color:var(--muted);box-shadow:none;border:1px solid var(--line)}
 
+/* hero: a way down to the live demo */
+.try-link{display:inline-flex;align-items:center;gap:8px;margin-top:16px;padding:10px 16px;border-radius:12px;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.35);color:#fff;text-decoration:none;font-weight:800;font-size:15px;transition:background .2s,transform .25s cubic-bezier(.34,1.56,.64,1)}
+.try-link:hover{background:rgba(255,255,255,.26);transform:translateY(-2px)}
+.try-link svg{width:16px;height:16px}
+
+/* the live demo: the real app in a phone, scaled to fit (it lays out for a 393 px phone) */
+.try{display:grid;gap:28px;align-items:center}
+@media(min-width:900px){.try{grid-template-columns:auto 1fr;gap:48px}}
+.try-phone{--s:1;width:calc(393px * var(--s) + 20px);height:calc(852px * var(--s) + 20px);margin:0 auto;padding:10px;border-radius:calc(54px * var(--s));background:#000;box-shadow:0 0 0 2px #1d2852,0 30px 80px -30px rgba(63,151,255,.65)}
+.try-screen{position:relative;width:calc(393px * var(--s));height:calc(852px * var(--s));border-radius:calc(44px * var(--s));overflow:hidden;background:#f2f4fb}
+.try-screen iframe{position:absolute;left:0;top:0;width:393px;height:852px;border:0;transform:scale(var(--s));transform-origin:0 0;background:#f2f4fb}
+.try-start{position:absolute;inset:0;border:0;padding:0;cursor:pointer;background:#0b1233;display:grid;place-items:center}
+.try-start[hidden]{display:none}
+.try-start img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top;filter:saturate(.9) brightness(.55)}
+.try-play{position:relative;display:inline-flex;align-items:center;gap:10px;padding:16px 24px;border-radius:999px;background:var(--grad);color:#fff;font:800 17px/1 inherit;box-shadow:0 12px 30px -8px rgba(63,151,255,.8);animation:tryPulse 2.4s ease-out infinite;transition:transform .25s cubic-bezier(.34,1.56,.64,1)}
+.try-play svg{width:20px;height:20px}
+.try-start:hover .try-play{transform:scale(1.05)}
+@keyframes tryPulse{0%{box-shadow:0 0 0 0 rgba(63,151,255,.55),0 12px 30px -8px rgba(63,151,255,.8)}70%,100%{box-shadow:0 0 0 18px rgba(63,151,255,0),0 12px 30px -8px rgba(63,151,255,.8)}}
+@media(prefers-reduced-motion:reduce){.try-play{animation:none}}
+.try-lead{font-size:clamp(16px,1.6vw,19px);color:#d8e2ff;max-width:52ch}
+.try-lead b{color:#fff}
+.try-list{list-style:none;padding:0;margin:22px 0 0;display:grid;gap:10px;counter-reset:t}
+@media(min-width:620px){.try-list{grid-template-columns:1fr 1fr}}
+.try-list li{counter-increment:t;display:flex;gap:12px;align-items:flex-start;padding:12px 14px;border-radius:16px;background:var(--panel);border:1px solid var(--line);font-size:14.5px;line-height:1.4;color:var(--muted)}
+.try-list li b{color:var(--text)}
+.try-list li::before{content:counter(t);flex:none;width:24px;height:24px;border-radius:8px;display:grid;place-items:center;background:rgba(255,122,47,.16);color:var(--ribbon);font-weight:800;font-size:13px}
+.try-acts{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px}
+.try-reset,.try-full{display:inline-flex;align-items:center;height:44px;padding:0 18px;border-radius:12px;font:800 14px/1 inherit;text-decoration:none;cursor:pointer}
+.try-reset{background:var(--grad);color:#fff;border:0;box-shadow:0 6px 18px -6px rgba(63,151,255,.7)}
+.try-full{background:transparent;color:var(--text);border:1px solid var(--line)}
+@media(min-width:900px){.try-full{display:none}}
+.try-note{margin-top:14px;font-size:13px;color:var(--muted)}
+
 footer{padding:24px 0 48px;text-align:center;color:var(--muted);font-weight:700;font-size:14px;display:flex;justify-content:center;align-items:center;gap:10px}
 footer img{width:32px;height:32px;border-radius:9px}
 footer a{color:#9cc2ff;text-decoration:none}
@@ -190,7 +223,8 @@ footer a{color:#9cc2ff;text-decoration:none}
 
     <div class="stores">
       <svg class="bow" viewBox="0 0 110 70" aria-hidden="true"><g fill="none" stroke="#ff7a2f" stroke-width="8"><ellipse cx="34" cy="34" rx="24" ry="14" transform="rotate(-24 34 34)"/><ellipse cx="76" cy="34" rx="24" ry="14" transform="rotate(24 76 34)"/></g><circle cx="55" cy="38" r="10" fill="#ff7a2f"/></svg>
-      <div class="big"><div class="n" id="users" data-to="250">250+</div><div class="l">GiftCard users on Android</div></div>
+      <div class="big"><div class="n" id="users" data-to="250">250+</div><div class="l">GiftCard users on Android</div>
+        <a class="try-link" href="#try">Try the live demo<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M6 13l6 6 6-6"/></svg></a></div>
       <div class="soon">
         <a class="qr" href="https://play.google.com/store/apps/details?id=com.yourcardjourney.giftcardvault" target="_blank" rel="noopener">
           <img src="assets/qr-android.svg" alt="QR code for Google Play">
@@ -208,22 +242,63 @@ footer a{color:#9cc2ff;text-decoration:none}
   <section>
     <h2>Inside Gift Card Vault</h2>
     <div class="feats">
-      <div class="feat"><figure><img src="assets/00-welcome.webp" alt="" loading="lazy"></figure><p><i></i>Create your vault</p></div>
-      <div class="feat"><figure><img src="assets/04-scan.webp" alt="" loading="lazy"></figure><p><i></i>Scan a voucher</p></div>
-      <div class="feat"><figure><img src="assets/08-paste.webp" alt="" loading="lazy"></figure><p><i></i>Paste many at once</p></div>
-      <div class="feat"><figure><img src="assets/01-home.webp" alt="" loading="lazy"></figure><p><i></i>Every card at a glance</p></div>
-      <div class="feat"><figure><img src="assets/02-combine.webp" alt="" loading="lazy"></figure><p><i></i>One total per store</p></div>
-      <div class="feat"><figure><img src="assets/03-stores.webp" alt="" loading="lazy"></figure><p><i></i>Stores, A to Z</p></div>
-      <div class="feat"><figure><img src="assets/09-search.webp" alt="" loading="lazy"></figure><p><i></i>Instant search</p></div>
-      <div class="feat"><figure><img src="assets/05-checkout.webp" alt="" loading="lazy"></figure><p><i></i>Big code at checkout</p></div>
-      <div class="feat"><figure><img src="assets/10-spend.webp" alt="" loading="lazy"></figure><p><i></i>Track what&rsquo;s left</p></div>
-      <div class="feat"><figure><img src="assets/06-alerts.webp" alt="" loading="lazy"></figure><p><i></i>Expiry alerts</p></div>
-      <div class="feat"><figure><img src="assets/07-export.webp" alt="" loading="lazy"></figure><p><i></i>Share with its PIN</p></div>
-      <div class="feat"><figure><img src="assets/11-archive.webp" alt="" loading="lazy"></figure><p><i></i>Archive used cards</p></div>
-      <div class="feat"><figure><img src="assets/12-dark.webp" alt="" loading="lazy"></figure><p><i></i>Dark theme</p></div>
-      <div class="feat"><figure><img src="assets/13-settings.webp" alt="" loading="lazy"></figure><p><i></i>Auto-lock &amp; fingerprint</p></div>
+      <div class="feat"><figure><img src="assets/s2-01-welcome.webp" alt="" loading="lazy"></figure><p><i></i>Create your vault</p></div>
+      <div class="feat"><figure><img src="assets/s2-02-home.webp" alt="" loading="lazy"></figure><p><i></i>Every card at a glance</p></div>
+      <div class="feat"><figure><img src="assets/s2-03-combine.webp" alt="" loading="lazy"></figure><p><i></i>One total per store</p></div>
+      <div class="feat"><figure><img src="assets/s2-04-fold.webp" alt="" loading="lazy"></figure><p><i></i>Hide values, fold it up</p></div>
+      <div class="feat"><figure><img src="assets/s2-05-stores.webp" alt="" loading="lazy"></figure><p><i></i>Stores, A to Z</p></div>
+      <div class="feat"><figure><img src="assets/s2-06-search.webp" alt="" loading="lazy"></figure><p><i></i>Instant search</p></div>
+      <div class="feat"><figure><img src="assets/s2-07-add.webp" alt="" loading="lazy"></figure><p><i></i>Every way to add</p></div>
+      <div class="feat"><figure><img src="assets/s2-08-scan.webp" alt="" loading="lazy"></figure><p><i></i>Scanner, rebuilt</p></div>
+      <div class="feat"><figure><img src="assets/s2-09-found.webp" alt="" loading="lazy"></figure><p><i></i>Many vouchers at once</p></div>
+      <div class="feat"><figure><img src="assets/s2-10-paste.webp" alt="" loading="lazy"></figure><p><i></i>Paste a whole email</p></div>
+      <div class="feat"><figure><img src="assets/s2-11-check.webp" alt="" loading="lazy"></figure><p><i></i>Check one by one</p></div>
+      <div class="feat"><figure><img src="assets/s2-12-confirm.webp" alt="" loading="lazy"></figure><p><i></i>Confirm, then save</p></div>
+      <div class="feat"><figure><img src="assets/s2-13-checkout.webp" alt="" loading="lazy"></figure><p><i></i>Barcode at checkout</p></div>
+      <div class="feat"><figure><img src="assets/s2-14-qr.webp" alt="" loading="lazy"></figure><p><i></i>Or a QR code</p></div>
+      <div class="feat"><figure><img src="assets/s2-15-spend.webp" alt="" loading="lazy"></figure><p><i></i>Track what&rsquo;s left</p></div>
+      <div class="feat"><figure><img src="assets/s2-16-alerts.webp" alt="" loading="lazy"></figure><p><i></i>Expiry alerts</p></div>
+      <div class="feat"><figure><img src="assets/s2-17-export.webp" alt="" loading="lazy"></figure><p><i></i>Share with its PIN</p></div>
+      <div class="feat"><figure><img src="assets/s2-18-archive.webp" alt="" loading="lazy"></figure><p><i></i>Archive used cards</p></div>
+      <div class="feat"><figure><img src="assets/s2-19-plans.webp" alt="" loading="lazy"></figure><p><i></i>Lifetime plan</p></div>
+      <div class="feat"><figure><img src="assets/s2-20-textsize.webp" alt="" loading="lazy"></figure><p><i></i>Checkout mode &amp; text size</p></div>
+      <div class="feat"><figure><img src="assets/s2-21-settings.webp" alt="" loading="lazy"></figure><p><i></i>Auto-lock &amp; fingerprint</p></div>
+      <div class="feat"><figure><img src="assets/s2-22-dark.webp" alt="" loading="lazy"></figure><p><i></i>Dark theme</p></div>
       <div class="feat"><figure><img src="assets/14-security-a.webp" alt="" loading="lazy"></figure><p><i></i>Nothing to hack</p></div>
       <div class="feat"><figure><img src="assets/15-security-b.webp" alt="" loading="lazy"></figure><p><i></i>Locked down</p></div>
+    </div>
+  </section>
+
+  <section id="try">
+    <h2>Try it yourself</h2>
+    <div class="try">
+      <div class="try-phone" id="try-phone">
+        <div class="try-screen">
+          <iframe id="try-frame" title="Gift Card Vault live demo" allow="camera; clipboard-read; clipboard-write"></iframe>
+          <button type="button" class="try-start" id="try-start">
+            <img src="assets/s2-03-combine.webp" alt="">
+            <span class="try-play"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M8 5.5v13a1 1 0 0 0 1.5.9l10.4-6.5a1 1 0 0 0 0-1.8L9.5 4.6A1 1 0 0 0 8 5.5Z"/></svg>Start the live demo</span>
+          </button>
+        </div>
+      </div>
+      <div class="try-side">
+        <p class="try-lead">The real app, with <b>165 sample gift cards</b> in 42 stores. Tap, scroll, search, scan, add &ndash; it&rsquo;s your own copy. Nothing you do reaches anyone else, and it starts fresh every time. Deleting is switched off.</p>
+        <ol class="try-list">
+          <li><span><b>Combine by brand</b> for one total per store</span></li>
+          <li><span>Tap the <b>eye</b> to hide the value, the <b>arrow</b> to fold it</span></li>
+          <li><span>Open <b>Stores</b> and pick Amazon</span></li>
+          <li><span>Tap a card for the <b>barcode</b>, then &lsaquo; &rsaquo; to the next</span></li>
+          <li><span><b>+ &rsaquo; Paste</b> a voucher email, then Find the vouchers</span></li>
+          <li><span><b>+ &rsaquo; Scan card</b> and hold a gift card to your camera</span></li>
+          <li><span>The <b>bell</b> lists cards about to expire</span></li>
+          <li><span><b>Settings</b>: text size, Checkout mode, dark theme</span></li>
+        </ol>
+        <div class="try-acts">
+          <button type="button" class="try-reset" id="try-reset">Start over</button>
+          <a class="try-full" href="demo/" target="_blank" rel="noopener">Open full screen</a>
+        </div>
+        <p class="try-note">Sample data with made-up codes. PDF reading, screen brightness and fingerprint need the phone.</p>
+      </div>
     </div>
   </section>
 
@@ -286,6 +361,10 @@ const VS = {
     ['Search across all vouchers', 1, 1, 1],
     ['Archive used vouchers (not delete)', 1, 0, 0],
     ['Duplicate code refused', 1, 0, 0],
+    ['Hide balances, fold the header', '1:Remembered', 0, 0],
+    ['Next / previous card inside a store', 1, 0, 0],
+    ['Export or clear a whole brand', 1, 0, 0],
+    ['Text size just for the app', '1:4 sizes', 0, 'Some apps'],
     ['Quickly tell vouchers apart', '1:Store-colour tiles', '0:Plain text', '0:Plain list'],
   ],
   'Money & expiry': [
@@ -296,13 +375,20 @@ const VS = {
     ['Expiry date tracked per voucher', 1, 'Type it yourself', 'Custom field'],
     ['Expiring-soon alerts', '1:In-app bell', 0, 0],
     ['Expired / redeemed counted apart', 1, 0, 0],
+    ['Expiry filled from purchase date', '1:Amazon: +1 year', 0, 0],
   ],
   'Speed': [
     ['Checkout view: big code + PIN', 1, 'Scroll + select text', 'Several taps'],
+    ['Barcode / QR for the shop scanner', '1:Full brightness', 0, 0],
     ['One-tap copy of code / PIN', 1, 0, 1],
-    ['Scan a voucher with the camera', '1:Offline scan', 0, 0],
+    ['Scan a voucher with the camera', '1:Fix or lock as it reads', 0, 0],
     ['Read a voucher from a screenshot', '1:Offline', 0, 0],
+    ['Many vouchers from one screenshot', '1:All found', 0, 0],
+    ['Read a PDF voucher', '1:Every page', 0, 0],
     ['Paste a voucher email, get cards', '1:Many at once', 0, 0],
+    ['Bulk import from a CSV file', 1, 0, 'Some apps'],
+    ['Collect codes from apps that block screenshots', 1, 0, 0],
+    ['Check each voucher, confirm before saving', 1, 0, 0],
     ['Share an email or screenshot in', 1, 'Saved as text', 0],
     ['Share one voucher with its PIN', 1, 'Copy text', 'Some apps'],
   ],
@@ -329,6 +415,7 @@ const VS = {
     ['Stores website passwords / logins', 0, 'Plain text', '1:Main job'],
     ['Made for Indian stores & vouchers', 1, 0, 0],
     ['Simple enough for anyone in family', 1, 1, 'Learning curve'],
+    ['Pay once, keep it for good', '1:Lifetime plan', '1:Free', '0:Mostly yearly'],
   ],
 };
 (() => {
@@ -365,6 +452,19 @@ const VS = {
   show('What it is');
 
   new IntersectionObserver((es, o) => { if (es[0].isIntersecting) { vs.classList.add('seen'); o.disconnect(); } }, {threshold: .3}).observe(vs);
+})();
+// the live demo: scale the phone to the window, load the app on the first tap
+(() => {
+  const ph = document.getElementById('try-phone'), fr = document.getElementById('try-frame'), st = document.getElementById('try-start');
+  const fit = () => {
+    const w = Math.min(document.querySelector('.wrap').clientWidth - 32, 413);
+    const h = innerHeight * .88;
+    ph.style.setProperty('--s', Math.min(1, (w - 20) / 393, (h - 20) / 852).toFixed(3));
+  };
+  fit(); addEventListener('resize', fit);
+  const start = () => { fr.src = 'demo/index.html?r=' + Date.now(); st.hidden = true; };
+  st.addEventListener('click', start);
+  document.getElementById('try-reset').addEventListener('click', start);
 })();
 // count the users stat up from 0 when the page opens
 (() => {

@@ -1,0 +1,478 @@
+/* ---- Theme tokens -------------------------------------------------------- */
+/* Brand palette — "Your Card Journey": indigo (YOUR), blue (CARD), orange (JOURNEY).
+   Design language borrowed from Card Ledger: crisp cool neutrals, layered soft
+   shadows, tinted duotone chips, and premium card vessels. */
+[data-theme="light"] {
+  --bg: #f2f4fb;
+  --bg-grad: radial-gradient(1150px 560px at 86% -12%, #e6ecfe 0%, #f2f4fb 56%);
+  --surface: #ffffff;
+  --surface2: #eef1f8;
+  --surface3: #f6f8fc;
+  --line: #e2e6f0;
+  --line2: #d3d9e8;
+  --text: #1b2138;
+  --muted: #69708c;
+  --accent: #2f8bf6;        /* CARD blue */
+  --accent2: #1f6fe0;       /* deeper blue (links/value) */
+  --accent-grad: linear-gradient(135deg, #3f97ff 0%, #3a2fc9 100%);  /* blue -> indigo */
+  --accent-soft: rgba(47,139,246,.12);
+  --indigo: #3a2fc9;        /* YOUR indigo */
+  --indigo-bg: #ece9fb;
+  --orange: #f47c20;        /* JOURNEY orange */
+  --orange-grad: linear-gradient(135deg, #ffa64d, #f4731a);
+  --green: #1f6fe0;         /* "positive/value" mapped to brand blue */
+  --amber: #e0900c;         /* attention -> warm amber */
+  --amber-bg: #fbeccd;
+  --red: #e23b33;
+  --red-bg: #fbe2e0;
+  --shadow: 0 18px 44px rgba(30,42,90,.12);
+  --shadow-sm: 0 6px 18px rgba(30,42,90,.07);
+}
+[data-theme="dark"] {
+  --bg: #0c0f22;
+  --bg-grad: radial-gradient(1150px 560px at 86% -12%, #1b1f4a 0%, #0c0f22 60%);
+  --surface: #171b34;
+  --surface2: #20254a;
+  --surface3: #1b2040;
+  --line: #2b3060;
+  --line2: #363c6f;
+  --text: #e8eaf6;
+  --muted: #99a0c2;
+  --accent: #4f9bff;
+  --accent2: #7a90ff;
+  --accent-grad: linear-gradient(135deg, #4f9bff 0%, #6a5cff 100%);
+  --accent-soft: rgba(79,155,255,.16);
+  --indigo: #8b7dff;
+  --indigo-bg: rgba(106,92,255,.20);
+  --orange: #ff9b45;
+  --orange-grad: linear-gradient(135deg, #ffb066, #ff8a2e);
+  --green: #6f9bff;
+  --amber: #f4b13e;
+  --amber-bg: rgba(244,177,62,.16);
+  --red: #ff6a61;
+  --red-bg: rgba(255,106,97,.16);
+  --shadow: 0 22px 50px rgba(0,0,0,.55);
+  --shadow-sm: 0 8px 22px rgba(0,0,0,.42);
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background: var(--bg-grad);
+  background-color: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+.hidden { display: none !important; }
+.muted { color: var(--muted); font-size: 14px; }
+.dim { color: var(--muted); font-size: 13px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; }
+.accent { color: var(--accent2); }
+.tone-indigo { color: var(--indigo); }
+.tone-blue { color: var(--accent); }
+.tone-orange { color: var(--orange); }
+.opt { color: var(--muted); font-size: 11px; font-weight: 400; text-transform: uppercase; letter-spacing: .05em; }
+.err { color: var(--red); min-height: 18px; font-size: 14px; }
+.msg { margin-left: 10px; color: var(--green); font-size: 14px; }
+code { background: var(--surface2); padding: 1px 6px; border-radius: 5px; font-size: 12px; }
+
+/* ---- Inputs & buttons ---------------------------------------------------- */
+input, textarea, select, button {
+  font: inherit; border-radius: 12px; border: 1px solid var(--line);
+  background: var(--surface2); color: var(--text); padding: 12px 14px; outline: none;
+  transition: border-color .15s, box-shadow .15s, background .15s;
+}
+input:focus, textarea:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+textarea { width: 100%; resize: vertical; font-family: ui-monospace, "Cascadia Code", monospace; font-size: 13px; }
+button { cursor: pointer; font-weight: 600; transition: filter .15s, background .15s, border-color .15s, transform .1s; }
+button:active { transform: translateY(1px); }
+.primary { background: var(--accent-grad); border: none; color: #fff; padding: 13px 22px; border-radius: 14px; box-shadow: 0 8px 20px rgba(47,80,220,.28); }
+.primary:hover { filter: brightness(1.06); }
+
+/* ---- Icon system --------------------------------------------------------- */
+.ico { display: inline-flex; align-items: center; justify-content: center; }
+.ico svg { width: 20px; height: 20px; display: block; }
+.ico-sm svg { width: 14px; height: 14px; }
+.fineprint .ico-sm { vertical-align: -2px; }
+
+/* ---- Lock screen --------------------------------------------------------- */
+.lock-screen { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+.lock-card {
+  background: var(--surface); border: 1px solid var(--line);
+  padding: 46px 40px; border-radius: 26px; width: 392px; max-width: 100%; text-align: center; box-shadow: var(--shadow);
+}
+.lock-card .logo { margin: 0 auto; }
+.brand-mark-lg { width: 66px; height: 66px; border-radius: 20px; }
+.brand-mark-lg .ico svg { width: 33px; height: 33px; }
+.lock-card h1 { margin: 14px 0 8px; font-size: 27px; font-weight: 900; letter-spacing: -.02em; }
+.lock-card input { width: 100%; margin: 20px 0 12px; }
+.lock-card button { width: 100%; }
+.fineprint { color: var(--muted); font-size: 12px; margin-top: 18px; line-height: 1.5; }
+
+/* ---- Top bar ------------------------------------------------------------- */
+/* header division: its own panel colour on the tinted page, not the page colour. */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 15px 28px;
+  position: sticky; top: 0; z-index: 5;
+  background: color-mix(in srgb, var(--surface) 90%, var(--accent) 5%);
+  backdrop-filter: saturate(1.35) blur(12px);
+  border-bottom: 1px solid color-mix(in srgb, var(--accent) 18%, var(--line));
+  box-shadow: 0 1px 0 rgba(255,255,255,.55) inset, 0 6px 18px -12px rgba(58,47,201,.42);
+}
+html[data-theme="dark"] .topbar { box-shadow: 0 6px 20px -14px #000; }
+.brand { display: flex; align-items: center; gap: 12px; font-weight: 800; font-size: 20px; }
+.brand-mark { background: linear-gradient(140deg,#22d3ee 0%,#0891b2 55%,#0e7490 100%); width: 44px; height: 44px; border-radius: 13px; display: grid; place-items: center; color: #fff; box-shadow: 0 8px 18px rgba(8,145,178,.42), inset 0 1px 0 rgba(255,255,255,.4); transition: transform .16s ease, box-shadow .16s ease, filter .16s ease; }
+.brand:hover .brand-mark { transform: translateY(-1px); filter: brightness(1.05); box-shadow: 0 10px 22px rgba(8,145,178,.52), inset 0 1px 0 rgba(255,255,255,.5); }
+.brand:focus-visible { outline: none; }
+.brand:focus-visible .brand-mark { outline: 2px solid #0891b2; outline-offset: 3px; }
+/* Animated brand icon — mirrors the YourCardJourney portal hover motion */
+.an-dial { transform-box: view-box; transform-origin: 12px 10.6px; }
+.brand:hover .an-dial { animation: an-turn .85s cubic-bezier(.22,1,.36,1) both; }
+@keyframes an-turn { 60% { transform: rotate(200deg); } 100% { transform: rotate(180deg); } }
+@media (prefers-reduced-motion: reduce) { .brand:hover .an-dial { animation: none; } }
+.brand-mark .ico svg { width: 24px; height: 24px; }
+.brand-text { display: flex; flex-direction: column; line-height: 1.05; }
+.brand-text small { font-size: 10px; letter-spacing: .16em; color: var(--muted); font-weight: 800; }
+.topbar-actions { display: flex; gap: 10px; }
+.icon-btn { background: var(--surface2); border: 1px solid var(--line); color: var(--text); padding: 9px 14px; border-radius: 12px; display: inline-flex; align-items: center; gap: 7px; font-weight: 600; }
+.icon-btn:hover { background: var(--line); border-color: var(--line2); }
+.icon-btn.icon-only { padding: 9px; }
+.icon-btn .ico svg { width: 18px; height: 18px; }
+
+main { max-width: 1120px; margin: 0 auto; padding: 30px 22px 90px; }
+
+/* ---- Hero ---------------------------------------------------------------- */
+.hero { display: grid; grid-template-columns: 1.25fr 2fr; gap: 16px; margin-bottom: 26px; }
+.vault-value {
+  background: var(--accent-grad); border-radius: 24px; padding: 30px 32px;
+  display: flex; flex-direction: column; justify-content: center; color: #fff; box-shadow: var(--shadow);
+  position: relative; overflow: hidden;
+}
+.vault-value::after {
+  content: ""; position: absolute; inset: 0;
+  background: radial-gradient(120% 120% at 0% 100%, rgba(255,255,255,.16), transparent 55%);
+  pointer-events: none;
+}
+.vault-value > *:not(.vv-orbit) { position: relative; z-index: 1; }
+.vv-orbit { position: absolute; top: -18px; right: -26px; width: 240px; height: 240px; color: #ffffff; opacity: .55; pointer-events: none; z-index: 0; }
+.vv-label { font-size: 11.5px; letter-spacing: .18em; font-weight: 800; opacity: .85; }
+.vv-amount { font-size: 56px; font-weight: 900; line-height: 1.02; margin: 8px 0 6px; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+.vv-sub { font-size: 14px; opacity: .9; font-weight: 600; }
+
+.kpis { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.kpi {
+  background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 17px 18px;
+  text-align: left; display: grid; grid-template-columns: auto 1fr; grid-template-rows: auto auto; gap: 2px 12px; box-shadow: var(--shadow-sm);
+  transition: transform .12s, border-color .15s, box-shadow .15s;
+}
+.kpi:hover { border-color: var(--line2); transform: translateY(-2px); box-shadow: var(--shadow); }
+.kpi.selected { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent) inset, var(--shadow-sm); }
+.kpi-ico { grid-row: 1 / 3; align-self: center; width: 44px; height: 44px; border-radius: 14px; display: grid; place-items: center; }
+.kpi-ico .ico svg { width: 23px; height: 23px; }
+.ico-active   { color: var(--accent2); background: var(--accent-soft); }
+.ico-expiring { color: var(--amber);   background: var(--amber-bg); }
+.ico-expired  { color: var(--red);     background: var(--red-bg); }
+.ico-redeemed { color: var(--indigo);  background: var(--indigo-bg); }
+.kpi-label { color: var(--muted); font-size: 12.5px; font-weight: 600; align-self: end; }
+.kpi-num { font-size: 30px; font-weight: 900; letter-spacing: -.01em; align-self: start; font-variant-numeric: tabular-nums; }
+.kpi.warn .kpi-num { color: var(--amber); }
+
+/* ---- Panel --------------------------------------------------------------- */
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 20px; padding: 22px; margin-bottom: 26px; box-shadow: var(--shadow-sm); }
+.eyebrow { font-size: 11px; letter-spacing: .16em; font-weight: 800; color: var(--muted); text-transform: uppercase; }
+.panel-head { margin-bottom: 14px; }
+.tabs { display: inline-flex; gap: 4px; background: var(--surface2); padding: 4px; border-radius: 14px; margin-bottom: 18px; border: 1px solid var(--line); }
+.tab { background: transparent; border: none; color: var(--muted); padding: 9px 20px; border-radius: 11px; font-weight: 700; }
+.tab.active { background: var(--surface); color: var(--accent2); box-shadow: var(--shadow-sm); }
+.tab-body input, .tab-body textarea { margin-bottom: 0; }
+#paste-brand { width: 100%; margin-bottom: 12px; }
+#tab-quick .muted { margin-top: 0; }
+#tab-quick textarea { margin: 12px 0; }
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 18px; }
+.grid label { display: flex; flex-direction: column; font-size: 12.5px; color: var(--muted); gap: 6px; font-weight: 700; letter-spacing: .01em; }
+.grid label.wide { grid-column: 1 / -1; }
+.grid input { color: var(--text); font-weight: 500; background: var(--surface3); }
+
+/* ---- Paste preview ------------------------------------------------------- */
+.ghost { background: transparent; border: 1px solid var(--line); color: var(--muted); padding: 13px 20px; border-radius: 14px; }
+.ghost:hover { color: var(--text); border-color: var(--accent); }
+.preview { margin-top: 18px; border-top: 1px dashed var(--line2); padding-top: 16px; }
+.preview-head { display: flex; align-items: baseline; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; }
+.preview-row {
+  display: grid; grid-template-columns: 1.3fr 0.8fr 1.6fr 0.7fr 1fr auto; gap: 8px;
+  align-items: center; padding: 8px; border: 1px solid var(--line); border-radius: 12px;
+  margin-bottom: 8px; background: var(--surface3);
+}
+.preview-row input { padding: 9px 10px; font-size: 13px; background: var(--surface); }
+.preview-row .prow-x { background: transparent; border: 1px solid var(--line); color: var(--red); width: 34px; height: 34px; border-radius: 9px; padding: 0; font-size: 16px; }
+.preview-row .prow-x:hover { background: var(--red-bg); }
+.preview-actions { display: flex; gap: 10px; margin-top: 6px; }
+@media (max-width: 760px) {
+  .preview-row { grid-template-columns: 1fr 1fr; }
+}
+
+/* ---- Inventory ----------------------------------------------------------- */
+.inv-head h2 { font-size: 37px; font-weight: 900; margin: 0 0 18px; line-height: 1.08; letter-spacing: -.02em; }
+.inv-head .dim { font-size: 12px; }
+.toolbar { display: flex; gap: 12px; margin-bottom: 14px; flex-wrap: wrap; }
+#search { flex: 1; min-width: 220px; }
+#sort { min-width: 220px; }
+.filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 18px; }
+.filter { background: var(--surface); border: 1px solid var(--line); color: var(--muted); padding: 9px 16px; border-radius: 22px; font-weight: 600; }
+.filter:hover { border-color: var(--accent); color: var(--text); }
+.filter.active { background: var(--accent-grad); color: #fff; border-color: transparent; box-shadow: 0 6px 16px rgba(47,80,220,.28); }
+
+/* Live summary of the filtered view */
+.filter-summary { display: flex; gap: 10px; flex-wrap: wrap; margin: -2px 0 18px; }
+.fs-chip {
+  display: inline-flex; align-items: center; gap: 9px;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 22px;
+  padding: 8px 15px; font-size: 14px; font-weight: 800; color: var(--text);
+  box-shadow: var(--shadow-sm); animation: fs-pop .18s ease-out;
+}
+.fs-chip .fs-ico { display: inline-flex; color: var(--accent2); }
+.fs-chip .fs-ico .ico svg { width: 17px; height: 17px; }
+.fs-chip-value { border-color: transparent; background: var(--indigo-bg); color: var(--indigo); }
+.fs-chip-value .fs-ico { color: var(--indigo); }
+.fs-note { font-weight: 700; font-size: 11.5px; color: var(--muted); letter-spacing: .02em; text-transform: uppercase; }
+@keyframes fs-pop { from { opacity: 0; transform: translateY(-3px); } to { opacity: 1; transform: none; } }
+
+/* ---- Cards --------------------------------------------------------------- */
+/* Premium gift-card vessels — a status-tinted accent stripe + layered surface. */
+#cards { display: grid; gap: 14px; }
+.card {
+  --tint: var(--accent);
+  position: relative; overflow: hidden;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 18px 20px 18px 24px;
+  display: grid; grid-template-columns: 1fr auto; gap: 12px; box-shadow: var(--shadow-sm);
+  transition: transform .12s, box-shadow .15s, border-color .15s;
+}
+.card::before {
+  content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 5px;
+  background: var(--tint); opacity: .9;
+}
+.card:hover { transform: translateY(-2px); box-shadow: var(--shadow); border-color: var(--line2); }
+.card.active    { --tint: var(--accent); }
+.card.expiring  { --tint: var(--amber); }
+.card.expired   { --tint: var(--red); border-color: color-mix(in srgb, var(--red) 30%, var(--line)); }
+.card.redeemed  { --tint: var(--indigo); opacity: .7; }
+.card-main { min-width: 0; }
+.card-top { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; flex-wrap: wrap; }
+.card-brand { font-weight: 800; font-size: 17px; letter-spacing: -.01em; }
+.card-amount { color: var(--green); font-weight: 800; font-variant-numeric: tabular-nums; }
+.card-balance { color: var(--muted); font-size: 13px; margin: 2px 0 8px; }
+.card-balance b { color: var(--green); }
+.pill { font-size: 10.5px; padding: 3px 10px; border-radius: 20px; text-transform: uppercase; letter-spacing: .06em; font-weight: 800; }
+.pill.active { background: var(--accent-soft); color: var(--accent2); }
+.pill.redeemed { background: var(--indigo-bg); color: var(--indigo); }
+.pill.expired { background: var(--red-bg); color: var(--red); }
+.pill.expiring { background: var(--amber-bg); color: var(--amber); }
+
+.field { display: flex; align-items: center; gap: 8px; margin: 5px 0; font-size: 14px; }
+.field .k { color: var(--muted); min-width: 58px; font-size: 12.5px; font-weight: 600; }
+.field .v { font-family: ui-monospace, "Cascadia Code", monospace; letter-spacing: .5px; word-break: break-all; background: var(--surface3); border: 1px solid var(--line); padding: 2px 9px; border-radius: 8px; }
+.copy { background: var(--surface2); border: 1px solid var(--line); color: var(--muted); padding: 4px 9px; font-size: 12px; border-radius: 8px; display: inline-flex; align-items: center; gap: 4px; }
+.copy:hover { color: var(--accent2); border-color: var(--accent); }
+.copy .ico svg { width: 13px; height: 13px; }
+.card-meta a { display: inline-flex; align-items: center; gap: 3px; }
+.card-meta a .ico svg { width: 13px; height: 13px; }
+.expiry-soon { color: var(--amber) !important; font-weight: 700; }
+.expiry-gone { color: var(--red) !important; font-weight: 700; }
+.card-meta { color: var(--muted); font-size: 12px; margin-top: 8px; }
+.card-meta a { color: var(--accent2); }
+
+.card-actions { display: flex; flex-direction: column; gap: 8px; align-items: flex-end; }
+.card-actions select { padding: 8px 10px; font-size: 13px; }
+.btn-redeem { background: var(--accent-soft); border: 1px solid var(--accent); color: var(--accent2); padding: 8px 14px; font-size: 13px; display: inline-flex; align-items: center; gap: 6px; font-weight: 700; }
+.btn-redeem:hover { background: color-mix(in srgb, var(--accent) 22%, transparent); }
+.btn-del { background: transparent; border: 1px solid var(--line); color: var(--red); padding: 8px 14px; font-size: 13px; display: inline-flex; align-items: center; gap: 6px; font-weight: 700; }
+.btn-del:hover { background: var(--red-bg); border-color: color-mix(in srgb, var(--red) 40%, var(--line)); }
+.btn-redeem .ico svg, .btn-del .ico svg { width: 15px; height: 15px; }
+
+.empty { text-align: center; color: var(--muted); padding: 50px 20px; border: 1px dashed var(--line2); border-radius: 18px; }
+
+/* ---- Footer credit ------------------------------------------------------- */
+.site-footer {
+  display: flex; flex-direction: column; align-items: center; gap: 10px;
+  margin-top: 44px; padding-top: 28px; border-top: 1px solid var(--line);
+}
+.footer-logo { height: 96px; width: auto; border-radius: 18px; }
+.footer-text { color: var(--muted); font-size: 13px; }
+.footer-text .handle { color: var(--accent2); font-weight: 700; }
+
+/* ---- Toast --------------------------------------------------------------- */
+.toast {
+  position: fixed; bottom: 26px; left: 50%; transform: translateX(-50%);
+  background: var(--accent2); color: white; padding: 12px 22px; border-radius: 12px;
+  font-weight: 700; box-shadow: var(--shadow); z-index: 20;
+}
+
+@media (max-width: 760px) {
+  .hero { grid-template-columns: 1fr; }
+  .grid { grid-template-columns: 1fr; }
+  .card { grid-template-columns: 1fr; }
+  .card-actions { flex-direction: row; align-items: center; flex-wrap: wrap; }
+  .vv-amount { font-size: 46px; }
+}
+
+/* ==========================================================================
+   Licence — activation screen, header chip, and the licence panel.
+   Built on this app's own tokens so it reads as part of the vault, not as a
+   transplant from another tool.
+   ========================================================================== */
+
+/* --- shared bits used by both the activation card and the panel ---------- */
+.lic-label {
+  display: block; text-align: left; font-size: 11.5px; font-weight: 700;
+  letter-spacing: .04em; text-transform: uppercase; color: var(--muted);
+  margin: 18px 0 7px;
+}
+.mid-box {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--surface2); border: 1px solid var(--line);
+  border-radius: 12px; padding: 11px 11px 11px 13px;
+}
+.mid-box code {
+  flex: 1; min-width: 0; font-family: ui-monospace, Consolas, monospace;
+  font-size: 12.5px; letter-spacing: .04em; line-height: 1.5;
+  word-break: break-all; color: var(--text); text-align: left;
+}
+/* `.lock-card button { width: 100% }` applies to anything inside the card, so
+   the Copy button would take the whole row and crush the ID to one character
+   per line. Same specificity, declared later, so this wins. */
+.mid-box button {
+  width: auto; flex: none; padding: 9px 15px; border-radius: 10px;
+  font-size: 12.5px; white-space: nowrap;
+}
+.lic-code {
+  width: 100%; padding: 11px 13px; border-radius: 12px; resize: vertical;
+  font-family: ui-monospace, Consolas, monospace; font-size: 12px;
+  line-height: 1.6; letter-spacing: .02em; word-break: break-all;
+  background: var(--surface2); color: var(--text);
+  border: 1px solid var(--line); outline: none;
+  transition: border-color .15s, box-shadow .15s;
+}
+.lic-code:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+.lic-ok { color: var(--accent2); font-size: 13px; font-weight: 600; margin: 10px 0 0; }
+
+/* Activation card is wider and left-aligned - it carries a long ID and a long
+   code, both of which read badly centred. `width` (not just max-width) is
+   required: .lock-card pins width to 392px, which max-width alone cannot
+   override. */
+.lic-card { width: 470px; max-width: 100%; text-align: left; }
+.lic-card h1, .lic-card > .muted { text-align: left; }
+.lic-card .logo { margin-left: 0; }
+.lic-card .fineprint { text-align: left; }
+.lic-card form { margin-top: 0; }
+
+/* --- header chip --------------------------------------------------------- */
+/* Quiet while the licence is healthy; it only takes colour when the user has
+   something to act on, so it never competes with the card grid. */
+.lic-chip {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 7px 13px 7px 10px; border-radius: 999px;
+  font-family: inherit; font-size: 12.5px; font-weight: 650; line-height: 1;
+  background: var(--surface2); color: var(--muted);
+  border: 1px solid var(--line); white-space: nowrap; cursor: pointer;
+  transition: filter .15s;
+}
+.lic-chip:hover { filter: brightness(.98); }
+[data-theme="dark"] .lic-chip:hover { filter: brightness(1.15); }
+.lic-chip svg { flex: none; opacity: .85; }
+.lic-chip.is-warn {
+  background: var(--amber-bg); border-color: transparent; color: var(--amber);
+}
+.lic-chip.is-bad {
+  background: var(--red-bg); border-color: transparent; color: var(--red);
+}
+
+/* --- licence panel ------------------------------------------------------- */
+.lic-scrim {
+  position: fixed; inset: 0; z-index: 90; display: grid; place-items: center;
+  padding: 22px; background: rgba(12,15,34,.45); backdrop-filter: blur(3px);
+}
+.lic-dialog {
+  width: min(520px, 100%); max-height: 88vh; overflow: auto;
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: 20px; box-shadow: var(--shadow);
+}
+.lic-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 18px 22px 14px; border-bottom: 1px solid var(--line);
+  position: sticky; top: 0; background: var(--surface); z-index: 1;
+}
+.lic-head h2 { margin: 0; font-size: 17px; }
+.lic-body { padding: 20px 22px 24px; }
+
+.lic-status {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  padding: 13px 15px; border-radius: 14px; margin-bottom: 18px;
+  background: var(--surface2); font-size: 13.5px; line-height: 1.5;
+}
+.lic-status.is-warn { background: var(--amber-bg); color: var(--amber); }
+.lic-status.is-bad  { background: var(--red-bg);   color: var(--red); }
+.lic-badge {
+  display: inline-flex; align-items: center; padding: 4px 11px;
+  border-radius: 999px; font-size: 11.5px; font-weight: 700;
+  background: var(--accent-soft); color: var(--accent2);
+}
+.lic-status.is-warn .lic-badge { background: rgba(224,144,12,.18); color: var(--amber); }
+.lic-status.is-bad  .lic-badge { background: rgba(226,59,51,.16);  color: var(--red); }
+
+.lic-rows { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 9px 18px; }
+.lic-rows dt { font-size: 12.5px; font-weight: 600; color: var(--muted); }
+.lic-rows dd { margin: 0; font-size: 13.5px; word-break: break-word; }
+.lic-rows dd code { font-family: ui-monospace, Consolas, monospace; font-size: 12px; }
+
+.lic-renew { margin-top: 20px; padding-top: 8px; border-top: 1px solid var(--line); }
+.lic-renew-toggle { padding: 9px 2px; font-size: 13px; font-weight: 600; }
+.lic-renew .mid-box { margin: 10px 0 12px; }
+.lic-renew .lic-code { margin-bottom: 6px; }
+.lic-renew .primary { width: 100%; margin-top: 10px; }
+.lic-foot {
+  margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--line);
+  text-align: left;
+}
+
+/* A lapsed licence inside its grace window makes the app read-only. Editing
+   affordances are hidden rather than left to fail, so the user is never
+   invited to try something the server will refuse. */
+body.is-readonly #add-btn,
+body.is-readonly .card-actions,
+body.is-readonly #import-btn { display: none !important; }
+.ro-banner {
+  background: var(--amber-bg); color: var(--amber);
+  border-bottom: 1px solid rgba(224,144,12,.3);
+  padding: 10px 16px; font-size: 13px; text-align: center; font-weight: 600;
+}
+
+
+/* --- Quit control (macOS builds only) -------------------------------------
+   The Mac app has no console window, so quitting has to be possible from the
+   page - including from the activation and lock screens, which are shown
+   before the header exists. `width: auto` is pinned deliberately: this app
+   has `.lock-card button { width: 100% }`, which is what once crushed the
+   Machine ID box to one character per line. */
+.lock-quit {
+  display: block;
+  width: auto;
+  margin: 16px auto 0;
+  padding: 6px 12px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--muted, #6b7280);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  opacity: .75;
+}
+.lock-quit:hover { opacity: 1; text-decoration: underline; }
+.lock-quit.hidden { display: none; }

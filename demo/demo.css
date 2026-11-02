@@ -1,0 +1,11 @@
+/* Gift Card Vault - live demo only. */
+[data-act="delete"], [data-act="brand-delete"], #stores-block, #ms-sheet { display: none !important; }
+#demo-veil { position: fixed; inset: 0; z-index: 2147483000; display: grid; place-items: center;
+  background: linear-gradient(135deg, #3f97ff, #3a2fc9); color: #fff; font: 600 15px/1.4 system-ui, sans-serif; text-align: center; }
+#demo-veil .dv-box { display: grid; gap: 8px; justify-items: center; padding: 24px; }
+#demo-veil b { font-size: 18px; }
+#demo-veil small { opacity: .85; }
+.dv-spin { width: 34px; height: 34px; border-radius: 50%; border: 3px solid rgba(255,255,255,.35); border-top-color: #fff;
+  animation: dvspin .9s linear infinite; margin-bottom: 6px; }
+@keyframes dvspin { to { transform: rotate(360deg); } }
+.demo-note { margin: 8px 0 0; font-size: 13px; font-weight: 600; opacity: .85; }
